@@ -18,7 +18,6 @@ public class GhostScript : MonoBehaviour
     // dissolve
     [SerializeField] private SkinnedMeshRenderer[] MeshR;
     private float Dissolve_value = 1;
-    private bool DissolveFlg = false;
 
     // moving speed
     [SerializeField] private float Speed = 4;

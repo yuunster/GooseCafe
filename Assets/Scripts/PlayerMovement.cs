@@ -6,9 +6,11 @@ public class PlayerMovement : MonoBehaviour
 {
     private Animator animator;
     private Rigidbody rb;
+    private CapsuleCollider coll;
     private float horizontalInput;
     private float verticalInput;
     private Vector3 moveDirection;
+    private Vector3 collCenter;
 
     private static readonly int IdleState = Animator.StringToHash("Base Layer.idle");
     private static readonly int MoveState = Animator.StringToHash("Base Layer.move");
@@ -21,20 +23,23 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float animationTransitionSpeed = 0.1f;
+    [SerializeField] private float maxSlopeAngle = 30f;
+
     public bool grounded { get; private set; }
+    public RaycastHit groundedHit;
 
     private void Start()
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
+        coll = GetComponent<CapsuleCollider>();
+        collCenter = transform.TransformPoint(coll.center);
     }
 
     private void Update()
     {
         Movement();
         Animation();
-
-        grounded = rb.Raycast(Vector3.down);
     }
 
     private void Movement()
@@ -44,16 +49,24 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 moveDirection = new Vector3(horizontalInput, 0, verticalInput).normalized;
 
+        grounded = Physics.Raycast(collCenter, Vector3.down, out groundedHit, coll.height + 0.1f); // Check if grounded
+
+        if (grounded)
+        {
+            float angle = Vector3.Angle(groundedHit.normal, Vector3.up);    // Calculate angle of the floor
+            if (angle >= maxSlopeAngle) return;     // Check if angle of ground is too steep to walk
+        }
+
         if (moveDirection.magnitude > 0)
         {
-            rb.velocity = moveDirection * moveSpeed;
+            rb.velocity = moveDirection * moveSpeed + new Vector3(0, rb.velocity.y, 0);
 
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
         }
         else
         {
-            rb.velocity = Vector3.zero;
+            rb.velocity = new Vector3(0, rb.velocity.y, 0);
         }
     }
 
