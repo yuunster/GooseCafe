@@ -4,10 +4,12 @@
 TagManager:
   serializedVersion: 2
   tags:
+  - Combiner
   - Cup
   - Milk
   - Sugar
   - Tea
+  - MilkTea
   layers:
   - Default
   - TransparentFX

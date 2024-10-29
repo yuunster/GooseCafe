@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using static UnityEditor.Progress;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -11,8 +11,10 @@ public class PlayerMovement : MonoBehaviour
     private float horizontalInput;
     private float verticalInput;
     private Vector3 moveDirection;
-    private Vector3 collCenter => transform.TransformPoint(coll.center);
+    private Vector3 collCenter => coll != null ? transform.TransformPoint(coll.center) : Vector3.zero;
     private GameObject heldItem;
+    private Collider[] hits;
+    private LayerMask interactablesLayer;
 
     private static readonly int IdleState = Animator.StringToHash("Base Layer.idle");
     private static readonly int MoveState = Animator.StringToHash("Base Layer.move");
@@ -26,7 +28,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float animationTransitionSpeed = 0.1f;
     [SerializeField] private float maxSlopeAngle = 30f;
-    [SerializeField] private float maxInteractRange = 2f;
+    [SerializeField] private float maxInteractRange = 0.5f;
     [SerializeField] private float carryItemDistance = 0.5f;
 
     public bool grounded { get; private set; }
@@ -37,6 +39,8 @@ public class PlayerMovement : MonoBehaviour
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
         coll = GetComponent<CapsuleCollider>();
+        hits = new Collider[10];
+        interactablesLayer = LayerMask.GetMask("Item", "Combiner");
     }
 
     private void Update()
@@ -75,37 +79,39 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    // Visualize BoxCast that handles interaction
+    void OnDrawGizmos() {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(collCenter + transform.forward * maxInteractRange, new Vector3(0.5f, 0.8f, 0.5f));
+    }
+
     private void Interaction()
     {
-        Vector3 startRaycastPos = collCenter - new Vector3(0, (coll.height / 2) - 0.1f, 0);
-        Debug.DrawLine(startRaycastPos, startRaycastPos + transform.forward * (coll.radius + maxInteractRange), Color.red);
-
         bool isInteracting = Input.GetKeyDown(KeyCode.E);
         if (!isInteracting) return;
 
-        bool isWithinRange = Physics.Raycast(startRaycastPos, transform.forward, out RaycastHit hitInfo, coll.radius + maxInteractRange);
+        int numHits = Physics.OverlapBoxNonAlloc(collCenter + transform.forward * maxInteractRange, new Vector3(0.5f, 0.8f, 0.5f), hits, Quaternion.LookRotation(transform.forward), interactablesLayer);
+        if (numHits == 0) return;
 
-        if (!isWithinRange) return;
+        // Make a copy of hits array with only numHits as the length. Sort this array by closest -> farthest distance. Return the closest hit.
+        Collider closestHit = hits.Take(numHits).OrderBy(hit => Vector3.Distance(transform.position, hit.transform.position)).ToArray()[0];
 
-        int itemLayer = LayerMask.NameToLayer("Item");
-        int combinerLayer = LayerMask.NameToLayer("Combiner");
-
-        if (hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("Item"))
+        if (closestHit.transform.gameObject.layer == LayerMask.NameToLayer("Item"))
         {
-            if (heldItem is not null) return;
+            if (heldItem != null) return;
 
-            GameObject item = hitInfo.transform.gameObject;
+            GameObject item = closestHit.transform.gameObject;
             HoldItem(item);
-        } else if (hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("Combiner"))
+        } else if (closestHit.transform.gameObject.layer == LayerMask.NameToLayer("Combiner"))
         {
-            GameObject combiner = hitInfo.transform.gameObject;
+            GameObject combiner = closestHit.transform.gameObject;
             Combiner combinerScript = combiner.GetComponent<Combiner>();
 
-            if (heldItem is null && combinerScript.outputtedItem is not null)
+            if (heldItem == null && combinerScript.outputtedItem != null)
             {
                 HoldItem(combinerScript.outputtedItem);
             }
-            else if(heldItem is not null && combiner.GetComponent<Combiner>().Input(heldItem))
+            else if(heldItem != null && combiner.GetComponent<Combiner>().Input(heldItem))
             {
                 heldItem.transform.position = combiner.transform.position + new Vector3(0, combiner.GetComponent<BoxCollider>().size.y / 2, 0);
                 heldItem.transform.SetParent(combiner.transform);

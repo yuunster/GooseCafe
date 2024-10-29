@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2504868251768249266}
   m_Layer: 7
   m_Name: MilkTeaCombiner
-  m_TagString: Untagged
+  m_TagString: Combiner
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -73,6 +73,7 @@ MonoBehaviour:
   - {fileID: 8657489562412445682, guid: ac8d598cb4398e8459fba796bc4e4e1c, type: 3}
   - {fileID: 4784389408821192208, guid: 8423545d4734e22429096e22b4f1f7aa, type: 3}
   output: {fileID: 8059885257644543679, guid: 41999861ff6df8b4784755ad4bc463eb, type: 3}
+  outputtedItem: {fileID: 0}
 --- !u!1 &8096155502061215479
 GameObject:
   m_ObjectHideFlags: 0
