@@ -16,17 +16,9 @@ public class PlayerMovement : MonoBehaviour
     private Collider[] hits;
     private LayerMask interactablesLayer;
 
-    private static readonly int IdleState = Animator.StringToHash("Base Layer.idle");
-    private static readonly int MoveState = Animator.StringToHash("Base Layer.move");
-    private static readonly int SurprisedState = Animator.StringToHash("Base Layer.surprised");
-    private static readonly int AttackState = Animator.StringToHash("Base Layer.attack_shift");
-    private static readonly int DissolveState = Animator.StringToHash("Base Layer.dissolve");
-    private static readonly int AttackTag = Animator.StringToHash("Attack");
     [SerializeField] private SkinnedMeshRenderer[] MeshR;
-
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float turnSpeed = 720f;
-    [SerializeField] private float animationTransitionSpeed = 0.1f;
     [SerializeField] private float maxSlopeAngle = 30f;
     [SerializeField] private float maxInteractRange = 0.5f;
     [SerializeField] private float carryItemDistance = 0.5f;
@@ -55,7 +47,7 @@ public class PlayerMovement : MonoBehaviour
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
 
-        Vector3 moveDirection = new Vector3(horizontalInput, 0, verticalInput).normalized;
+        moveDirection = new Vector3(horizontalInput, 0, verticalInput).normalized;
         float velocityY = rb.velocity.y > 0 ? 0 : rb.velocity.y;
 
         grounded = Physics.Raycast(collCenter, Vector3.down, out groundedHit, coll.height + 0.1f); // Check if grounded
@@ -89,6 +81,8 @@ public class PlayerMovement : MonoBehaviour
     {
         bool isInteracting = Input.GetKeyDown(KeyCode.E);
         if (!isInteracting) return;
+
+        animator.SetTrigger("Interact");
 
         int numHits = Physics.OverlapBoxNonAlloc(collCenter + transform.forward * maxInteractRange, new Vector3(0.5f, 0.8f, 0.5f), hits, Quaternion.LookRotation(transform.forward), interactablesLayer);
         if (numHits == 0) return;
@@ -136,12 +130,8 @@ public class PlayerMovement : MonoBehaviour
     private void Animation()
     {
         if (moveDirection.magnitude > 0)
-        {
-            animator.CrossFade(MoveState, animationTransitionSpeed);
-        }
+            animator.SetBool("IsMoving", true);
         else
-        {
-            animator.CrossFade(IdleState, animationTransitionSpeed);
-        }
+            animator.SetBool("IsMoving", false);
     }
 }
