@@ -85,14 +85,22 @@ public class PlayerMovement : MonoBehaviour
         animator.SetTrigger("Interact");
 
         int numHits = Physics.OverlapBoxNonAlloc(collCenter + transform.forward * maxInteractRange, new Vector3(0.5f, 0.8f, 0.5f), hits, Quaternion.LookRotation(transform.forward), interactablesLayer);
-        if (numHits == 0) return;
+        if (numHits == 0)
+        {
+            if (heldItem != null) ReleaseItem(heldItem);
+            return;
+        }
 
         // Make a copy of hits array with only numHits as the length. Sort this array by closest -> farthest distance. Return the closest hit.
         Collider closestHit = hits.Take(numHits).OrderBy(hit => Vector3.Distance(transform.position, hit.transform.position)).ToArray()[0];
 
         if (closestHit.transform.gameObject.layer == LayerMask.NameToLayer("Item"))
         {
-            if (heldItem != null) return;
+            if (heldItem != null)
+            {
+                ReleaseItem(heldItem);
+                return;
+            }
 
             GameObject item = closestHit.transform.gameObject;
             HoldItem(item);
@@ -126,6 +134,15 @@ public class PlayerMovement : MonoBehaviour
         heldItem.GetComponent<Rigidbody>().isKinematic = true;
         heldItem.transform.rotation = Quaternion.identity;
     }
+
+    private void ReleaseItem(GameObject item)
+    {
+        heldItem.transform.SetParent(null);
+        heldItem.GetComponent<Collider>().enabled = true;
+        heldItem.GetComponent<Rigidbody>().isKinematic = false;
+        heldItem = null;
+    }
+        
 
     private void Animation()
     {
