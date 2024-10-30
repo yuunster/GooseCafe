@@ -17,7 +17,7 @@ public class PlayerMovement : MonoBehaviour
     private LayerMask interactablesLayer;
 
     [SerializeField] private SkinnedMeshRenderer[] MeshR;
-    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float moveSpeed = 3.5f;
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float maxSlopeAngle = 30f;
     [SerializeField] private float maxInteractRange = 0.5f;
@@ -39,7 +39,6 @@ public class PlayerMovement : MonoBehaviour
     {
         Movement();
         Interaction();
-        Animation();
     }
 
     private void Movement()
@@ -60,6 +59,8 @@ public class PlayerMovement : MonoBehaviour
 
         if (moveDirection.magnitude > 0)
         {
+            animator.SetBool("IsMoving", true);
+
             rb.velocity = moveDirection * moveSpeed + new Vector3(0, velocityY, 0);
 
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
@@ -67,6 +68,8 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
+            animator.SetBool("IsMoving", false);
+
             rb.velocity = new Vector3(0, velocityY, 0);
         }
     }
@@ -96,7 +99,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (closestHit.transform.gameObject.layer == LayerMask.NameToLayer("Item"))
         {
-            if (heldItem != null)
+            if (heldItem != null)   // If holding something already, drop it.
             {
                 ReleaseItem(heldItem);
                 return;
@@ -104,16 +107,17 @@ public class PlayerMovement : MonoBehaviour
 
             GameObject item = closestHit.transform.gameObject;
             HoldItem(item);
-        } else if (closestHit.transform.gameObject.layer == LayerMask.NameToLayer("Combiner"))
+        }
+        else if (closestHit.transform.gameObject.layer == LayerMask.NameToLayer("Combiner"))
         {
             GameObject combiner = closestHit.transform.gameObject;
             Combiner combinerScript = combiner.GetComponent<Combiner>();
 
-            if (heldItem == null && combinerScript.outputtedItem != null)
+            if (heldItem == null && combinerScript.outputtedItem != null)   // If not holding something and combiner has an item ready, take it.
             {
                 HoldItem(combinerScript.outputtedItem);
             }
-            else if(heldItem != null && combiner.GetComponent<Combiner>().Input(heldItem))
+            else if (heldItem != null && combiner.GetComponent<Combiner>().Input(heldItem)) // If holding something, try putting it in the combiner
             {
                 heldItem.transform.position = combiner.transform.position + new Vector3(0, combiner.GetComponent<BoxCollider>().size.y / 2, 0);
                 heldItem.transform.SetParent(combiner.transform);
@@ -126,9 +130,9 @@ public class PlayerMovement : MonoBehaviour
     private void HoldItem(GameObject item)
     {
         heldItem = item;
-        heldItem.transform.position = transform.position +
-            (transform.forward.normalized * carryItemDistance) +
-            new Vector3(0, heldItem.GetComponent<BoxCollider>().size.y / 2, 0);
+        heldItem.transform.position = transform.position
+            + (transform.forward.normalized * carryItemDistance)
+            + new Vector3(0, heldItem.GetComponent<BoxCollider>().size.y / 2, 0);
         heldItem.transform.SetParent(this.transform);
         heldItem.GetComponent<Collider>().enabled = false;
         heldItem.GetComponent<Rigidbody>().isKinematic = true;
@@ -141,14 +145,5 @@ public class PlayerMovement : MonoBehaviour
         heldItem.GetComponent<Collider>().enabled = true;
         heldItem.GetComponent<Rigidbody>().isKinematic = false;
         heldItem = null;
-    }
-        
-
-    private void Animation()
-    {
-        if (moveDirection.magnitude > 0)
-            animator.SetBool("IsMoving", true);
-        else
-            animator.SetBool("IsMoving", false);
     }
 }

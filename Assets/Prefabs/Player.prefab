@@ -249,11 +249,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MeshR: []
-  moveSpeed: 5
+  moveSpeed: 3.5
   turnSpeed: 720
-  animationTransitionSpeed: 0.1
   maxSlopeAngle: 30
   maxInteractRange: 0.5
+  carryItemDistance: 0.5
 --- !u!1 &2596668623763892967
 GameObject:
   m_ObjectHideFlags: 0
