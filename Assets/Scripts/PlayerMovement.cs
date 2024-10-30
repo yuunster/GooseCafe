@@ -16,12 +16,12 @@ public class PlayerMovement : MonoBehaviour
     private Collider[] hits;
     private LayerMask interactablesLayer;
 
-    [SerializeField] private SkinnedMeshRenderer[] MeshR;
+    [SerializeField] private GameObject neck;
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float maxSlopeAngle = 30f;
     [SerializeField] private float maxInteractRange = 0.5f;
-    [SerializeField] private float carryItemDistance = 0.35f;
+    [SerializeField] private float carryItemDistance = 0.45f;
 
     public bool grounded { get; private set; }
     public RaycastHit groundedHit;
@@ -139,13 +139,11 @@ public class PlayerMovement : MonoBehaviour
     private void HoldItem(GameObject item)
     {
         heldItem = item;
-        heldItem.transform.position = transform.position
-            + (transform.forward.normalized * carryItemDistance)
-            + new Vector3(0, coll.height / 2, 0);
-        heldItem.transform.SetParent(this.transform);
+        heldItem.transform.SetParent(neck.transform);
+        heldItem.transform.position = neck.transform.position + transform.forward * carryItemDistance;
+        heldItem.transform.rotation = Quaternion.identity;
         heldItem.GetComponent<Collider>().enabled = false;
         heldItem.GetComponent<Rigidbody>().isKinematic = true;
-        heldItem.transform.rotation = Quaternion.identity;
     }
 
     private void ReleaseItem(GameObject item)
