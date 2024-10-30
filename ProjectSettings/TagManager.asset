@@ -11,6 +11,8 @@ TagManager:
   - Tea
   - MilkTea
   - Boba
+  - CookedBobaPot
+  - MilkTeaBoba
   layers:
   - Default
   - TransparentFX
@@ -21,7 +23,7 @@ TagManager:
   - Item
   - Combiner
   - ItemSpawner
-  - Drink
+  - 
   - Stove
   - Pot
   - 

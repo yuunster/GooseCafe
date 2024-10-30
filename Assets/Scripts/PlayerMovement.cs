@@ -33,7 +33,7 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         coll = GetComponent<CapsuleCollider>();
         hits = new Collider[10];
-        interactablesLayer = LayerMask.GetMask("Item", "Combiner", "ItemSpawner", "Stove", "Pot", "Drink");
+        interactablesLayer = LayerMask.GetMask("Item", "Combiner", "ItemSpawner", "Stove", "Pot");
     }
 
     private void Update()
@@ -169,17 +169,28 @@ public class PlayerMovement : MonoBehaviour
         {
             Pot potScript = closestGO.GetComponent<Pot>();
 
-            if (heldItem != null) // If holding something, put it in the pot
+            if (heldItem == null)   // If not holding something take the pot
+            {
+                HoldItem(closestGO);
+                return;
+            }
+
+            if (heldItem.GetComponent<Drink>() && closestGO.CompareTag("CookedBobaPot"))   // If holding a drink & CookedBobaPot, use boba
+            {
+                CookedBobaPot cookedBobaPotScript = closestGO.GetComponent<CookedBobaPot>();
+                Drink drinkScript = heldItem.GetComponent<Drink>();
+
+                cookedBobaPotScript.UseBoba();  // Decreases CookedBobaPot uses by 1
+                Destroy(heldItem);
+                HoldItem(Instantiate(drinkScript.drinkWithBoba));    // Creates a new drink object with boba added
+            }
+            else if (heldItem != null) // If holding something, put it in the pot
             {
                 potScript.Input(heldItem);
                 heldItem.transform.position = closestGO.transform.position + new Vector3(0, closestGO.GetComponent<BoxCollider>().size.y / 2, 0);
                 heldItem.transform.SetParent(closestGO.transform);
 
                 heldItem = null;
-            }
-            else if (heldItem == null)   // If not holding something take the pot
-            {
-                HoldItem(closestGO);
             }
         }
     }

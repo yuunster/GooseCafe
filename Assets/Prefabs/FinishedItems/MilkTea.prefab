@@ -177,6 +177,7 @@ GameObject:
   - component: {fileID: 458083719563539726}
   - component: {fileID: 2153747107960953203}
   - component: {fileID: 6375927718913235121}
+  - component: {fileID: 3190475423531958783}
   m_Layer: 6
   m_Name: MilkTea
   m_TagString: MilkTea
@@ -250,6 +251,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.3, y: 0.6, z: 0.3}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3190475423531958783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8059885257644543679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d29800be1ae61874f81871a9fdf84fe9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  drinkWithBoba: {fileID: 8059885257644543679, guid: 657e3c95d7bccd84e8dd47d16abb2b31, type: 3}
 --- !u!1001 &7664723159604796524
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -268,7 +282,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7941832648799114390, guid: 159ecb86b222f2d439c2ddc8d08343ab, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7941832648799114390, guid: 159ecb86b222f2d439c2ddc8d08343ab, type: 3}
       propertyPath: m_LocalPosition.z

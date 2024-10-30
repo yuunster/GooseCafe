@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: -2081265490631500448}
   - component: {fileID: 2712802880799424683}
   - component: {fileID: -3645742885896770072}
+  - component: {fileID: 8643523612492167745}
   m_Layer: 11
   m_Name: CookedBobaPot
-  m_TagString: Untagged
+  m_TagString: CookedBobaPot
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -101,6 +102,20 @@ MonoBehaviour:
   output: {fileID: 943679956747003616, guid: c479da76d2b6e514ab10ad2f9e347468, type: 3}
   trash: {fileID: 943679956747003616, guid: c479da76d2b6e514ab10ad2f9e347468, type: 3}
   cookTime: 5
+--- !u!114 &8643523612492167745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943679956747003616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8b8325c0957cd94e96bf7647ef4aa70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uses: 1
+  emptyPot: {fileID: 943679956747003616, guid: 7945fc60590207f43b3e1fa0aad85daf, type: 3}
 --- !u!1 &3160243498434868979
 GameObject:
   m_ObjectHideFlags: 0
