@@ -22,6 +22,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float maxSlopeAngle = 30f;
     [SerializeField] private float maxInteractRange = 0.5f;
     [SerializeField] private float carryItemDistance = 0.45f;
+    [SerializeField] private float throwSpeed = 4f;
 
     public bool grounded { get; private set; }
     public RaycastHit groundedHit;
@@ -39,6 +40,7 @@ public class PlayerMovement : MonoBehaviour
     {
         Movement();
         Interaction();
+        Throw();
     }
 
     private void Movement()
@@ -151,6 +153,23 @@ public class PlayerMovement : MonoBehaviour
         heldItem.transform.SetParent(null);
         heldItem.GetComponent<Collider>().enabled = true;
         heldItem.GetComponent<Rigidbody>().isKinematic = false;
+        heldItem = null;
+    }
+
+    private void Throw()
+    {
+        bool isThrowing = Input.GetButtonDown("Fire1");
+        if (!isThrowing || heldItem == null) return;
+
+        animator.SetTrigger("Throw");
+
+        heldItem.transform.SetParent(null);
+        heldItem.GetComponent<Collider>().enabled = true;
+        Rigidbody itemRb = heldItem.GetComponent<Rigidbody>();
+        itemRb.isKinematic = false;
+        itemRb.velocity = transform.forward * throwSpeed    // Horizontal throw speed
+            + transform.up * throwSpeed / 2     // Vertical throw speed 
+            + transform.forward * Vector3.Dot(transform.forward, moveDirection) * throwSpeed;   // Additional throw speed if player is moving
         heldItem = null;
     }
 }

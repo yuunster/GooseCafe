@@ -248,12 +248,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa04a4e16fff75469cc95d5e368ae3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  neck: {fileID: 7456144616509809948}
+  neck: {fileID: 6432367458940559105}
   moveSpeed: 5
   turnSpeed: 720
   maxSlopeAngle: 30
   maxInteractRange: 0.5
   carryItemDistance: 0.45
+  throwSpeed: 4
 --- !u!1 &2596668623763892967
 GameObject:
   m_ObjectHideFlags: 0
