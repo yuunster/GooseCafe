@@ -16,12 +16,13 @@ public class PlayerMovement : MonoBehaviour
     private Collider[] hits;
     private LayerMask interactablesLayer;
 
-    [SerializeField] private SkinnedMeshRenderer[] MeshR;
+    [SerializeField] private GameObject neck;
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float maxSlopeAngle = 30f;
     [SerializeField] private float maxInteractRange = 0.5f;
-    [SerializeField] private float carryItemDistance = 0.35f;
+    [SerializeField] private float carryItemDistance = 0.45f;
+    [SerializeField] private float throwSpeed = 4f;
 
     public bool grounded { get; private set; }
     public RaycastHit groundedHit;
@@ -32,13 +33,14 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         coll = GetComponent<CapsuleCollider>();
         hits = new Collider[10];
-        interactablesLayer = LayerMask.GetMask("Item", "Combiner", "ItemSpawner");
+        interactablesLayer = LayerMask.GetMask("Item", "Combiner", "ItemSpawner", "Stove", "Pot", "Drink");
     }
 
     private void Update()
     {
         Movement();
         Interaction();
+        Throw();
     }
 
     private void Movement()
@@ -96,8 +98,9 @@ public class PlayerMovement : MonoBehaviour
 
         // Make a copy of hits array with only numHits as the length. Sort this array by closest -> farthest distance. Return the closest hit.
         Collider closestHit = hits.Take(numHits).OrderBy(hit => Vector3.Distance(transform.position, hit.transform.position)).ToArray()[0];
+        GameObject closestGO = closestHit.transform.gameObject;
 
-        if (closestHit.transform.gameObject.layer == LayerMask.NameToLayer("Item"))
+        if (closestGO.layer == LayerMask.NameToLayer("Item"))
         {
             if (heldItem != null)   // If holding something already, drop it.
             {
@@ -108,44 +111,87 @@ public class PlayerMovement : MonoBehaviour
             GameObject item = closestHit.transform.gameObject;
             HoldItem(item);
         }
-        else if (closestHit.transform.gameObject.layer == LayerMask.NameToLayer("Combiner"))
+        else if (closestGO.layer == LayerMask.NameToLayer("Combiner"))
         {
-            GameObject combiner = closestHit.transform.gameObject;
-            Combiner combinerScript = combiner.GetComponent<Combiner>();
+            Combiner combinerScript = closestGO.GetComponent<Combiner>();
 
             if (heldItem == null && combinerScript.outputtedItem != null)   // If not holding something and combiner has an item ready, take it.
             {
                 HoldItem(combinerScript.outputtedItem);
             }
-            else if (heldItem != null && combiner.GetComponent<Combiner>().Input(heldItem)) // If holding something, try putting it in the combiner
+            else if (heldItem != null && closestGO.GetComponent<Combiner>().Input(heldItem)) // If holding something, try putting it in the combiner
             {
-                heldItem.transform.position = combiner.transform.position + new Vector3(0, combiner.GetComponent<BoxCollider>().size.y / 2, 0);
-                heldItem.transform.SetParent(combiner.transform);
+                heldItem.transform.position = closestGO.transform.position + new Vector3(0, closestGO.GetComponent<BoxCollider>().size.y / 2, 0);
+                heldItem.transform.SetParent(closestGO.transform);
 
                 heldItem = null;
             }
         }
-        else if (closestHit.transform.gameObject.layer == LayerMask.NameToLayer("ItemSpawner"))
+        else if (closestGO.layer == LayerMask.NameToLayer("ItemSpawner"))
         {
-            GameObject spawner = closestHit.transform.gameObject;
-            ItemSpawner spawnerScript = spawner.GetComponent<ItemSpawner>();
-
             if (heldItem != null) return;
 
+            ItemSpawner spawnerScript = closestGO.GetComponent<ItemSpawner>();
             HoldItem(Instantiate(spawnerScript.item));
+        }
+        else if (closestGO.layer == LayerMask.NameToLayer("Stove"))
+        {
+            Stove stoveScript = closestGO.GetComponent<Stove>();
+
+            if (heldItem == null && stoveScript.heldItem != null)
+            {
+                HoldItem(stoveScript.heldItem);
+                stoveScript.RemovePot();
+            }
+            else if (heldItem != null)
+            {
+                if (heldItem.layer == LayerMask.NameToLayer("Pot") && stoveScript.heldItem == null)     // If holding a pot and stove is empty, put it on the stove
+                {
+                    stoveScript.Input(heldItem);
+                    heldItem = null;
+                }
+                else if (stoveScript.heldItem != null)      // If holding an item and a pot is on the stove, put item in pot
+                {
+                    stoveScript.heldItem.GetComponent<Pot>().Input(heldItem);
+                    stoveScript.StartCooking();
+                    heldItem.transform.position = stoveScript.heldItem.transform.position + new Vector3(0, stoveScript.heldItem.GetComponent<BoxCollider>().size.y / 2, 0);
+                    heldItem.transform.SetParent(stoveScript.heldItem.transform);
+
+                    heldItem = null;
+                }
+                else
+                {
+                    ReleaseItem(heldItem);
+                }
+            }
+        }
+        else if (closestGO.layer == LayerMask.NameToLayer("Pot"))
+        {
+            Pot potScript = closestGO.GetComponent<Pot>();
+
+            if (heldItem != null) // If holding something, put it in the pot
+            {
+                potScript.Input(heldItem);
+                heldItem.transform.position = closestGO.transform.position + new Vector3(0, closestGO.GetComponent<BoxCollider>().size.y / 2, 0);
+                heldItem.transform.SetParent(closestGO.transform);
+
+                heldItem = null;
+            }
+            else if (heldItem == null)   // If not holding something take the pot
+            {
+                HoldItem(closestGO);
+            }
         }
     }
 
     private void HoldItem(GameObject item)
     {
         heldItem = item;
-        heldItem.transform.position = transform.position
-            + (transform.forward.normalized * carryItemDistance)
-            + new Vector3(0, coll.height / 2, 0);
-        heldItem.transform.SetParent(this.transform);
+        heldItem.transform.SetParent(neck.transform);
+        heldItem.transform.position = neck.transform.position + transform.forward * carryItemDistance;
+        heldItem.transform.rotation = Quaternion.identity;
         heldItem.GetComponent<Collider>().enabled = false;
         heldItem.GetComponent<Rigidbody>().isKinematic = true;
-        heldItem.transform.rotation = Quaternion.identity;
     }
 
     private void ReleaseItem(GameObject item)
@@ -153,6 +199,25 @@ public class PlayerMovement : MonoBehaviour
         heldItem.transform.SetParent(null);
         heldItem.GetComponent<Collider>().enabled = true;
         heldItem.GetComponent<Rigidbody>().isKinematic = false;
+        heldItem = null;
+    }
+
+    private void Throw()
+    {
+        bool isThrowing = Input.GetButtonDown("Fire1");
+        if (!isThrowing) return;
+
+        animator.SetTrigger("Throw");
+
+        if (heldItem == null) return;
+
+        heldItem.transform.SetParent(null);
+        heldItem.GetComponent<Collider>().enabled = true;
+        Rigidbody itemRb = heldItem.GetComponent<Rigidbody>();
+        itemRb.isKinematic = false;
+        itemRb.velocity = transform.forward * throwSpeed    // Horizontal throw speed
+            + transform.up * throwSpeed / 2     // Vertical throw speed 
+            + transform.forward * Vector3.Dot(transform.forward, moveDirection) * throwSpeed;   // Additional throw speed if player is moving
         heldItem = null;
     }
 }
