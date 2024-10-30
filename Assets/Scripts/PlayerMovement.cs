@@ -121,7 +121,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else if (heldItem != null && closestGO.GetComponent<Combiner>().Input(heldItem)) // If holding something, try putting it in the combiner
             {
-                heldItem.transform.position = closestGO.transform.position + new Vector3(0, closestGO.GetComponent<BoxCollider>().size.y / 2, 0);
+                heldItem.transform.position = closestGO.transform.position + new Vector3(0, heldItem.GetComponent<BoxCollider>().size.y / 2, 0);
                 heldItem.transform.SetParent(closestGO.transform);
 
                 heldItem = null;
