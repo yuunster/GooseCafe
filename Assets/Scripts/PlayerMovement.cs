@@ -97,7 +97,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Make a copy of hits array with only numHits as the length. Sort this array by closest -> farthest distance. Return the closest hit.
-        Collider closestHit = hits.Take(numHits).OrderBy(hit => Vector3.Distance(transform.position, hit.transform.position)).ToArray()[0];
+        Collider closestHit = hits.Take(numHits).OrderBy(hit => Vector3.Distance(transform.position + transform.forward * maxInteractRange, hit.transform.position)).ToArray()[0];
         GameObject closestGO = closestHit.transform.gameObject;
 
         if (closestGO.layer == LayerMask.NameToLayer("Item"))
