@@ -159,9 +159,11 @@ public class PlayerMovement : MonoBehaviour
     private void Throw()
     {
         bool isThrowing = Input.GetButtonDown("Fire1");
-        if (!isThrowing || heldItem == null) return;
+        if (!isThrowing) return;
 
         animator.SetTrigger("Throw");
+
+        if (heldItem == null) return;
 
         heldItem.transform.SetParent(null);
         heldItem.GetComponent<Collider>().enabled = true;
