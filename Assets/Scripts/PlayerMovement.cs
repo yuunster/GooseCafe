@@ -17,11 +17,11 @@ public class PlayerMovement : MonoBehaviour
     private LayerMask interactablesLayer;
 
     [SerializeField] private SkinnedMeshRenderer[] MeshR;
-    [SerializeField] private float moveSpeed = 3.5f;
+    [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float maxSlopeAngle = 30f;
     [SerializeField] private float maxInteractRange = 0.5f;
-    [SerializeField] private float carryItemDistance = 0.5f;
+    [SerializeField] private float carryItemDistance = 0.35f;
 
     public bool grounded { get; private set; }
     public RaycastHit groundedHit;
@@ -32,7 +32,7 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         coll = GetComponent<CapsuleCollider>();
         hits = new Collider[10];
-        interactablesLayer = LayerMask.GetMask("Item", "Combiner");
+        interactablesLayer = LayerMask.GetMask("Item", "Combiner", "ItemSpawner");
     }
 
     private void Update()
@@ -77,7 +77,7 @@ public class PlayerMovement : MonoBehaviour
     // Visualize BoxCast that handles interaction
     void OnDrawGizmos() {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(collCenter + transform.forward * maxInteractRange, new Vector3(0.5f, 0.8f, 0.5f));
+        Gizmos.DrawWireCube(collCenter + new Vector3(0, 0.5f, 0) + transform.forward * maxInteractRange, new Vector3(0.5f, 2f, 0.5f));
     }
 
     private void Interaction()
@@ -87,7 +87,7 @@ public class PlayerMovement : MonoBehaviour
 
         animator.SetTrigger("Interact");
 
-        int numHits = Physics.OverlapBoxNonAlloc(collCenter + transform.forward * maxInteractRange, new Vector3(0.5f, 0.8f, 0.5f), hits, Quaternion.LookRotation(transform.forward), interactablesLayer);
+        int numHits = Physics.OverlapBoxNonAlloc(collCenter + new Vector3(0, 0.5f, 0) + transform.forward * maxInteractRange, new Vector3(0.5f, 2f, 0.7f), hits, Quaternion.LookRotation(transform.forward), interactablesLayer);
         if (numHits == 0)
         {
             if (heldItem != null) ReleaseItem(heldItem);
@@ -125,6 +125,15 @@ public class PlayerMovement : MonoBehaviour
                 heldItem = null;
             }
         }
+        else if (closestHit.transform.gameObject.layer == LayerMask.NameToLayer("ItemSpawner"))
+        {
+            GameObject spawner = closestHit.transform.gameObject;
+            ItemSpawner spawnerScript = spawner.GetComponent<ItemSpawner>();
+
+            if (heldItem != null) return;
+
+            HoldItem(Instantiate(spawnerScript.item));
+        }
     }
 
     private void HoldItem(GameObject item)
@@ -132,7 +141,7 @@ public class PlayerMovement : MonoBehaviour
         heldItem = item;
         heldItem.transform.position = transform.position
             + (transform.forward.normalized * carryItemDistance)
-            + new Vector3(0, heldItem.GetComponent<BoxCollider>().size.y / 2, 0);
+            + new Vector3(0, coll.height / 2, 0);
         heldItem.transform.SetParent(this.transform);
         heldItem.GetComponent<Collider>().enabled = false;
         heldItem.GetComponent<Rigidbody>().isKinematic = true;
