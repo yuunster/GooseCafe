@@ -15,7 +15,7 @@ public class Stove : MonoBehaviour
 
         heldItem = input;
         heldItem.transform.SetParent(this.transform);
-        heldItem.transform.position = this.transform.position + transform.up * 0.7f;
+        heldItem.transform.position = this.transform.position + transform.up * GetComponent<BoxCollider>().size.y / 2 + transform.up * heldItem.GetComponent<BoxCollider>().size.y / 2;
         heldItem.transform.rotation = Quaternion.identity;
         heldItem.GetComponent<Collider>().enabled = false;
         heldItem.GetComponent<Rigidbody>().isKinematic = true;
