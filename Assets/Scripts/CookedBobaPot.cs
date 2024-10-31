@@ -13,7 +13,7 @@ public class CookedBobaPot : MonoBehaviour
 
         if (uses <= 0)
         {
-            Instantiate(emptyPot, transform.position, Quaternion.identity);
+            Instantiate(emptyPot, transform.position, transform.rotation);
             Destroy(this.gameObject);
         }
     }

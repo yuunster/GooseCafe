@@ -101,6 +101,7 @@ MonoBehaviour:
   required: []
   output: {fileID: 943679956747003616, guid: c479da76d2b6e514ab10ad2f9e347468, type: 3}
   trash: {fileID: 943679956747003616, guid: c479da76d2b6e514ab10ad2f9e347468, type: 3}
+  outputTrashByDefault: 1
   cookTime: 5
 --- !u!114 &8643523612492167745
 MonoBehaviour:
