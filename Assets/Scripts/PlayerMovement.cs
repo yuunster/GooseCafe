@@ -33,7 +33,7 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         coll = GetComponent<CapsuleCollider>();
         hits = new Collider[10];
-        interactablesLayer = LayerMask.GetMask("Item", "Combiner", "ItemSpawner", "Stove", "Pot");
+        interactablesLayer = LayerMask.GetMask("Item", "Combiner", "ItemSpawner", "Stove", "Pot", "TrashCan");
     }
 
     private void Update()
@@ -193,16 +193,31 @@ public class PlayerMovement : MonoBehaviour
                 heldItem = null;
             }
         }
+        else if (closestGO.layer == LayerMask.NameToLayer("TrashCan"))
+        {
+            if (heldItem == null) return;
+
+            if (heldItem.layer == LayerMask.NameToLayer("Pot"))
+            {
+                Destroy(heldItem);
+                HoldItem(Instantiate(GameAssets.i.pot));
+            }
+            else
+            {
+                Destroy(heldItem);
+                heldItem = null;
+            }
+        }
     }
 
     private void HoldItem(GameObject item)
     {
         heldItem = item;
-        heldItem.transform.SetParent(neck.transform);
-        heldItem.transform.position = neck.transform.position + transform.forward * carryItemDistance;
-        heldItem.transform.rotation = Quaternion.identity;
         heldItem.GetComponent<Collider>().enabled = false;
         heldItem.GetComponent<Rigidbody>().isKinematic = true;
+        heldItem.transform.SetParent(neck.transform);
+        heldItem.transform.position = neck.transform.position + transform.forward * carryItemDistance - transform.up * heldItem.GetComponent<BoxCollider>().size.y / 2;
+        heldItem.transform.rotation = Quaternion.LookRotation(transform.forward);
     }
 
     private void ReleaseItem(GameObject item)

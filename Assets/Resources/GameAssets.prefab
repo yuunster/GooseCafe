@@ -54,3 +54,4 @@ MonoBehaviour:
   - Milk
   - Sugar
   - Tea
+  pot: {fileID: 943679956747003616, guid: 7945fc60590207f43b3e1fa0aad85daf, type: 3}

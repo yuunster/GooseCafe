@@ -15,6 +15,7 @@ public class GameAssets : MonoBehaviour
 
     public GameObject[] ingredients;
     public string[] ingredientTags;
+    public GameObject pot;
 
     private void Start()
     {
