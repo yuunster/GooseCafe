@@ -289,7 +289,6 @@ public class PlayerMovement : MonoBehaviour
     {
         bool tryingToDash = Input.GetButtonDown("Fire3");
         if (!tryingToDash || isDashing || isDashOnCooldown) return;
-        print("dashing");
 
         rb.velocity = transform.forward * moveSpeed + transform.forward * dashSpeed;
         StartCoroutine(DashTimer());
