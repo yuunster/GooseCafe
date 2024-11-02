@@ -15,6 +15,7 @@ public class PlayerMovement : MonoBehaviour
     private GameObject heldItem;
     private Collider[] hits;
     private LayerMask interactablesLayer;
+    private OrderManager orderManager;
 
     [SerializeField] private GameObject neck;
     [SerializeField] private float moveSpeed = 5f;
@@ -33,7 +34,8 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         coll = GetComponent<CapsuleCollider>();
         hits = new Collider[10];
-        interactablesLayer = LayerMask.GetMask("Item", "Combiner", "ItemSpawner", "Stove", "Pot", "TrashCan");
+        interactablesLayer = LayerMask.GetMask("Item", "Combiner", "ItemSpawner", "Stove", "Pot", "TrashCan", "SubmitOrder");
+        orderManager = FindObjectOfType<OrderManager>();
     }
 
     private void Update()
@@ -208,6 +210,11 @@ public class PlayerMovement : MonoBehaviour
                 heldItem = null;
             }
         }
+        else if (closestGO.layer == LayerMask.NameToLayer("SubmitOrder"))
+        {
+            orderManager.CheckAndFinishOrder(heldItem);
+            DestroyHeldItem();
+        }
     }
 
     private void HoldItem(GameObject item)
@@ -225,6 +232,12 @@ public class PlayerMovement : MonoBehaviour
         heldItem.transform.SetParent(null);
         heldItem.GetComponent<Collider>().enabled = true;
         heldItem.GetComponent<Rigidbody>().isKinematic = false;
+        heldItem = null;
+    }
+
+    private void DestroyHeldItem()
+    {
+        Destroy(heldItem);
         heldItem = null;
     }
 

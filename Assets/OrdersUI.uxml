@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/USS.uss?fileID=7433441132597879392&amp;guid=b334e1750ef673c4dbbdfb497ed0bcfc&amp;type=3#USS" />
+    <ui:GroupBox name="Orders" style="flex-direction: row; height: 88px; align-items: flex-start;" />
+    <ui:Label tabindex="-1" text="Score: 0" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Score" style="display: flex; position: absolute; top: auto; bottom: 0; color: rgb(255, 255, 255); font-size: 30px; -unity-font-style: bold;" />
+</ui:UXML>
