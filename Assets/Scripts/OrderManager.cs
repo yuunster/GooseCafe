@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+struct Order
+{
+    public GameObject GameObject;
+    public VisualElement VisualElement;
+}
+
 public class OrderManager : MonoBehaviour
 {
     [SerializeField] private UIDocument uiDocument;
@@ -10,24 +16,30 @@ public class OrderManager : MonoBehaviour
     [SerializeField] private Texture2D[] possibleImages;
     [SerializeField] private int generateOrderSpeed = 5;
     [SerializeField] private int orderDuration = 30;
-    private List<GameObject> currentOrders;
+    private List<Order> currentOrders;
     private VisualElement root;
     private GroupBox groupBox;
     private int score = 0;
+    private Dictionary<string, int> scoreMap = new Dictionary<string, int>
+    {
+        { "MilkTea", 100 },
+        { "MilkTeaBoba", 300 }
+    };
 
     private void Start()
     {
         root = uiDocument.rootVisualElement;
         groupBox = root.Q<GroupBox>("Orders");
-        currentOrders = new List<GameObject>();
+        currentOrders = new List<Order>();
         GenerateOrder();
         StartCoroutine(WaitToGenerateOrder());
     }
 
     private void GenerateOrder()
     {
+        Order newOrder = new Order();
         int randomIndex = Random.Range(0, possibleOrders.Length);
-        currentOrders.Add(possibleOrders[randomIndex]);
+        newOrder.GameObject = possibleOrders[randomIndex];
 
         // Container
         VisualElement newOrderContainer = new VisualElement();
@@ -51,9 +63,12 @@ public class OrderManager : MonoBehaviour
 
         newOrderContainer.Add(imageElement);
         newOrderContainer.Add(progressBar);
-        groupBox.Add(newOrderContainer);
+        newOrder.VisualElement = newOrderContainer;
 
-        StartCoroutine(WaitToIncompleteOrder(newOrderContainer, progressBar));
+        groupBox.Add(newOrderContainer);
+        currentOrders.Add(newOrder);
+
+        StartCoroutine(WaitToIncompleteOrder(newOrder, progressBar));
     }
 
     private IEnumerator WaitToGenerateOrder()
@@ -62,7 +77,7 @@ public class OrderManager : MonoBehaviour
         GenerateOrder();
         StartCoroutine(WaitToGenerateOrder());
     }
-    private IEnumerator WaitToIncompleteOrder(VisualElement orderContainer, ProgressBar progressBar)
+    private IEnumerator WaitToIncompleteOrder(Order order, ProgressBar progressBar)
     {
         float elapsedTime = 0f;
 
@@ -77,8 +92,8 @@ public class OrderManager : MonoBehaviour
 
         // Ensure progress bar is empty at the end
         progressBar.value = 0;
-        int index = groupBox.IndexOf(orderContainer);
-        if (index != -1) RemoveOrder(index);
+        int index = currentOrders.IndexOf(order);
+        RemoveOrder(index);
     }
 
     private void RemoveOrder(int index)
@@ -96,13 +111,13 @@ public class OrderManager : MonoBehaviour
 
     public void CheckAndFinishOrder(GameObject input)
     {
-        foreach (GameObject order in currentOrders)
+        foreach (Order order in currentOrders)
         {
-            if (input.CompareTag(order.tag))    // If a matching order is found
+            if (input.CompareTag(order.GameObject.tag))    // If a matching order is found
             {
-                int index = currentOrders.FindIndex(x => x.CompareTag(order.tag));  // Find index of the matched order
+                int index = currentOrders.FindIndex(x => x.GameObject.CompareTag(input.tag));  // Find index of the matched order
                 RemoveOrder(index);
-                UpdateScore(100);
+                UpdateScore(scoreMap[input.tag]);   // Update score based on the items score value defined at the beginning of this class
 
                 return;
             }
