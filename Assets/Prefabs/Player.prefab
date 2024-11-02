@@ -250,11 +250,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   neck: {fileID: 6432367458940559105}
   moveSpeed: 5
-  turnSpeed: 720
+  turnSpeed: 1000
   maxSlopeAngle: 30
   maxInteractRange: 0.5
   carryItemDistance: 0.45
   throwSpeed: 4
+  dashSpeed: 7
+  dashDuration: 0.15
+  dashCooldown: 1
 --- !u!1 &2596668623763892967
 GameObject:
   m_ObjectHideFlags: 0

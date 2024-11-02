@@ -16,6 +16,8 @@ public class PlayerMovement : MonoBehaviour
     private Collider[] hits;
     private LayerMask interactablesLayer;
     private OrderManager orderManager;
+    private bool isDashing = false;
+    private bool isDashOnCooldown = false;
 
     [SerializeField] private GameObject neck;
     [SerializeField] private float moveSpeed = 5f;
@@ -24,6 +26,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float maxInteractRange = 0.5f;
     [SerializeField] private float carryItemDistance = 0.45f;
     [SerializeField] private float throwSpeed = 4f;
+    [SerializeField] private float dashSpeed = 2f;
+    [SerializeField] private float dashDuration = 0.5f;
+    [SerializeField] private float dashCooldown = 1f;
 
     public bool grounded { get; private set; }
     public RaycastHit groundedHit;
@@ -43,10 +48,13 @@ public class PlayerMovement : MonoBehaviour
         Movement();
         Interaction();
         Throw();
+        Dash();
     }
 
     private void Movement()
     {
+        if (isDashing) return;
+
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
 
@@ -152,14 +160,31 @@ public class PlayerMovement : MonoBehaviour
                     stoveScript.Input(heldItem);
                     heldItem = null;
                 }
-                else if (stoveScript.heldItem != null)      // If holding an item and a pot is on the stove, put item in pot
+                else if (stoveScript.heldItem != null)      // If holding an item and a pot is on the stove
                 {
-                    stoveScript.heldItem.GetComponent<Pot>().Input(heldItem);
-                    stoveScript.StartCooking();
-                    heldItem.transform.position = stoveScript.heldItem.transform.position + new Vector3(0, stoveScript.heldItem.GetComponent<BoxCollider>().size.y / 2, 0);
-                    heldItem.transform.SetParent(stoveScript.heldItem.transform);
+                    if (heldItem.GetComponent<Drink>() && stoveScript.heldItem.GetComponent<CookedBobaPot>())     // If pot on the stove is a CookedBobaPot and holding a drink
+                    {
+                        CookedBobaPot cookedBobaPotScript = stoveScript.heldItem.GetComponent<CookedBobaPot>();
+                        Drink drinkScript = heldItem.GetComponent<Drink>();
 
-                    heldItem = null;
+                        GameObject newPot = cookedBobaPotScript.UseBoba();  // Decreases CookedBobaPot uses by 1
+                        if (newPot != null)
+                        {
+                            stoveScript.RemovePot();
+                            stoveScript.Input(newPot);
+                        }
+                        Destroy(heldItem);
+                        HoldItem(Instantiate(drinkScript.drinkWithBoba));    // Creates a new drink object with boba added
+                    }
+                    else
+                    {
+                        stoveScript.heldItem.GetComponent<Pot>().Input(heldItem);
+                        stoveScript.StartCooking();
+                        heldItem.transform.position = stoveScript.heldItem.transform.position + new Vector3(0, stoveScript.heldItem.GetComponent<BoxCollider>().size.y / 2, 0);
+                        heldItem.transform.SetParent(stoveScript.heldItem.transform);
+
+                        heldItem = null;
+                    }
                 }
                 else
                 {
@@ -258,5 +283,30 @@ public class PlayerMovement : MonoBehaviour
             + transform.up * throwSpeed / 2     // Vertical throw speed 
             + transform.forward * Vector3.Dot(transform.forward, moveDirection) * throwSpeed;   // Additional throw speed if player is moving
         heldItem = null;
+    }
+
+    private void Dash()
+    {
+        bool tryingToDash = Input.GetButtonDown("Fire3");
+        if (!tryingToDash || isDashing || isDashOnCooldown) return;
+        print("dashing");
+
+        rb.velocity = transform.forward * moveSpeed + transform.forward * dashSpeed;
+        StartCoroutine(DashTimer());
+        StartCoroutine(DashCooldown());
+    }
+
+    private IEnumerator DashTimer()
+    {
+        isDashing = true;
+        yield return new WaitForSeconds(dashDuration);
+        isDashing = false;
+    }
+
+    private IEnumerator DashCooldown()
+    {
+        isDashOnCooldown = true;
+        yield return new WaitForSeconds(dashCooldown);
+        isDashOnCooldown = false;
     }
 }
