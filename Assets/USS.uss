@@ -1,1 +1,3 @@
-VisualElement {}
+.progress-fill-red .unity-progress-bar__progress {
+    background-color: red;
+}

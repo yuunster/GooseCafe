@@ -179,6 +179,7 @@ public class PlayerMovement : MonoBehaviour
                     else
                     {
                         stoveScript.heldItem.GetComponent<Pot>().Input(heldItem);
+                        stoveScript.StopCooking();
                         stoveScript.StartCooking();
                         heldItem.transform.position = stoveScript.heldItem.transform.position + new Vector3(0, stoveScript.heldItem.GetComponent<BoxCollider>().size.y / 2, 0);
                         heldItem.transform.SetParent(stoveScript.heldItem.transform);

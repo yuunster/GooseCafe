@@ -1,12 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 using UnityEngine.Windows;
 
 public class Stove : MonoBehaviour
 {
     [SerializeField] public GameObject heldItem;
+    [SerializeField] private UIManager uiManager;
+
     private Coroutine cookCoroutine;
+    private ProgressBar progressBar;
 
     // Returns true if successfully inputted. Returns false otherwise.
     public bool Input(GameObject input)
@@ -36,6 +40,7 @@ public class Stove : MonoBehaviour
         if (cookCoroutine != null)
         {
             StopCoroutine(cookCoroutine);
+            uiManager.RemoveProgressBar(progressBar);
             cookCoroutine = null;
         }
     }
@@ -48,14 +53,30 @@ public class Stove : MonoBehaviour
 
     public void StartCooking()
     {
-        StopCooking();
+        progressBar = uiManager.AddPotProgressBar(heldItem);
         cookCoroutine = StartCoroutine(CookTimer());
     }    
 
     private IEnumerator CookTimer()
     {
         Pot potScript = heldItem.GetComponent<Pot>();
-        yield return new WaitForSeconds(potScript.cookTime);
+
+        float elapsedTime = 0f;
+
+        while (elapsedTime < potScript.cookTime)
+        {
+            elapsedTime += Time.deltaTime;
+            float progress = Mathf.Clamp01(1 - (elapsedTime / potScript.cookTime)) * 100; // Calculate progress percentage
+            progressBar.value = 100 - progress;
+
+            yield return null; // Wait for the next frame
+        }
+
+        // Ensure progress bar is empty at the end
+        progressBar.value = 0;
+
+        uiManager.RemoveProgressBar(progressBar);
+
         GameObject cookedPot = potScript.Cook();
         ReplacePot(cookedPot);
     }

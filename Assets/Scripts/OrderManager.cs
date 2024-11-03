@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEngine.Rendering.DebugUI.MessageBox;
 
 struct Order
 {
@@ -60,6 +61,7 @@ public class OrderManager : MonoBehaviour
         progressBar.style.height = 50;
         progressBar.value = 100;    // Start the progress bar at full
         progressBar.title = "";
+        progressBar.AddToClassList("progress-fill-red");    // Make progress bar red based on USS.uss style sheet
 
         newOrderContainer.Add(imageElement);
         newOrderContainer.Add(progressBar);
