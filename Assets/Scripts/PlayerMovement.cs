@@ -162,6 +162,9 @@ public class PlayerMovement : MonoBehaviour
                 }
                 else if (stoveScript.heldItem != null)      // If holding an item and a pot is on the stove
                 {
+                    if (heldItem.layer == LayerMask.NameToLayer("Pot")) return;     // Prevent a pot from being put into a pot
+                    if (stoveScript.heldItem.CompareTag("TrashPot")) return;    // Prevent items from being inputted into TrashPot
+
                     if (heldItem.GetComponent<Drink>() && stoveScript.heldItem.GetComponent<CookedBobaPot>())     // If pot on the stove is a CookedBobaPot and holding a drink
                     {
                         CookedBobaPot cookedBobaPotScript = stoveScript.heldItem.GetComponent<CookedBobaPot>();
@@ -202,6 +205,9 @@ public class PlayerMovement : MonoBehaviour
                 HoldItem(closestGO);
                 return;
             }
+
+            if (heldItem.layer == LayerMask.NameToLayer("Pot")) return;     // Prevent a pot from being put into a pot
+            if (closestGO.CompareTag("TrashPot")) return;    // Prevent items from being inputted into TrashPot    
 
             if (heldItem.GetComponent<Drink>() && closestGO.CompareTag("CookedBobaPot"))   // If holding a drink & CookedBobaPot, use boba
             {
