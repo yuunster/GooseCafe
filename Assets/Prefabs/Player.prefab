@@ -248,7 +248,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa04a4e16fff75469cc95d5e368ae3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  neck: {fileID: 6432367458940559105}
+  neck: {fileID: 7456144616509809948}
   moveSpeed: 5
   turnSpeed: 1000
   maxSlopeAngle: 30
