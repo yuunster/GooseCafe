@@ -14,8 +14,7 @@ public class UIManager : MonoBehaviour
 	private VisualElement root;    // Root of the UI Document
 	private List<PotProgressPair> pairs = new List<PotProgressPair>();
 
-	[SerializeField] int yOffset = 20;
-	[SerializeField] int xOffset = 0;
+	[SerializeField] float yOffset = 1.5f;
 
 	void Start()
 	{
@@ -59,14 +58,9 @@ public class UIManager : MonoBehaviour
 
 	private void PositionProgressBar(ProgressBar progressBar, Vector3 potPosition)
 	{
-        Vector3 screen = Camera.main.WorldToScreenPoint(potPosition);
+        Vector3 screen = Camera.main.WorldToScreenPoint(potPosition + new Vector3(0, yOffset, 0));
 		progressBar.style.left = screen.x - (progressBar.layout.width / 2);
-		progressBar.style.top = Screen.height - screen.y;
-
-		var cameraRay = Camera.main.ScreenPointToRay(screen);
-		Debug.DrawRay(cameraRay.origin, cameraRay.direction * 100, Color.magenta);
-
-        print("left: " + progressBar.style.left + "|top: " + progressBar.style.top + "Screen: " + Screen.width + "x" + Screen.height);
+		progressBar.style.top = Screen.height - screen.y - yOffset;
     }
 
     // Call this method to update all progress bars

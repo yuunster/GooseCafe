@@ -67,7 +67,7 @@ public class Stove : MonoBehaviour
         {
             elapsedTime += Time.deltaTime;
             float progress = Mathf.Clamp01(1 - (elapsedTime / potScript.cookTime)) * 100; // Calculate progress percentage
-            progressBar.value = progress;
+            progressBar.value = 100 - progress;
 
             yield return null; // Wait for the next frame
         }
