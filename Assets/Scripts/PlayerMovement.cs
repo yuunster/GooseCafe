@@ -236,7 +236,7 @@ public class PlayerMovement : MonoBehaviour
                 heldItem = null;
             }
         }
-        else if (closestGO.layer == LayerMask.NameToLayer("SubmitOrder"))
+        else if (closestGO.layer == LayerMask.NameToLayer("SubmitOrder") && heldItem != null)
         {
             orderManager.CheckAndFinishOrder(heldItem);
             DestroyHeldItem();
