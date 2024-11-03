@@ -13,6 +13,7 @@ TagManager:
   - Boba
   - CookedBobaPot
   - MilkTeaBoba
+  - TrashPot
   layers:
   - Default
   - TransparentFX

@@ -23,6 +23,7 @@ public class Stove : MonoBehaviour
         heldItem.transform.rotation = transform.rotation;
         heldItem.GetComponent<Collider>().enabled = false;
         heldItem.GetComponent<Rigidbody>().isKinematic = true;
+        if (heldItem.CompareTag("TrashPot")) return true;   // If trash pot, stop here
         if (!heldItem.GetComponent<Pot>().isEmpty) StartCooking();  // If pot is not empty, start cooking
 
         return true;

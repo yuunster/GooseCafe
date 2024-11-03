@@ -258,6 +258,7 @@ public class PlayerMovement : MonoBehaviour
         heldItem.transform.SetParent(null);
         heldItem.GetComponent<Collider>().enabled = true;
         heldItem.GetComponent<Rigidbody>().isKinematic = false;
+        heldItem.transform.localScale = Vector3.one;    // Prevent player animations from permanently "stretching" a held item
         heldItem = null;
     }
 

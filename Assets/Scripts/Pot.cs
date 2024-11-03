@@ -2,17 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class Pot : MonoBehaviour
 {
     [SerializeField] private GameObject[] required;
     [SerializeField] private GameObject output;
     [SerializeField] private GameObject trash;
-    [SerializeField] private bool outputTrashByDefault = false;
 
     public float cookTime = 5f;
-    public bool isEmpty => !outputTrashByDefault && inputted.Count == 0;
+    public bool isEmpty => inputted.Count == 0;
 
     private List<GameObject> inputted;
 
@@ -35,7 +33,7 @@ public class Pot : MonoBehaviour
 
     private bool CheckValid()
     {
-        if (outputTrashByDefault || inputted.Count != required.Length) return false;
+        if (inputted.Count != required.Length) return false;
 
         foreach (GameObject r in required)
         {

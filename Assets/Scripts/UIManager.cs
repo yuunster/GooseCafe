@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using UnityEngine;
@@ -32,15 +33,18 @@ public class UIManager : MonoBehaviour
 		progressBar.style.height = 50;
 		progressBar.style.width = 100;
         progressBar.AddToClassList("progress-fill-red");    // Make progress bar red based on USS.uss style sheet
+		progressBar.style.display = DisplayStyle.None;	// Hide ProgressBar until properly positioned
 
         // Add to UI
         root.Add(progressBar);
-		PotProgressPair pair = new PotProgressPair() { pot = pot, progressBar = progressBar };
-		pairs.Add(pair);
+        PotProgressPair pair = new PotProgressPair() { pot = pot, progressBar = progressBar };
+        pairs.Add(pair);
 
-		// Position the ProgressBar based on the pot's screen position
-		PositionProgressBar(progressBar, pot.transform.position);
-		return progressBar;
+        // Position the ProgressBar based on the pot's screen position
+        PositionProgressBar(progressBar, pot.transform.position);
+		StartCoroutine(DelayDisplayingProgressbar(progressBar));
+
+        return progressBar;
 	}
 
 	public void RemoveProgressBar(ProgressBar progressBar)
@@ -62,6 +66,12 @@ public class UIManager : MonoBehaviour
 		progressBar.style.left = screen.x - (progressBar.layout.width / 2);
 		progressBar.style.top = Screen.height - screen.y - yOffset;
     }
+
+	private IEnumerator DelayDisplayingProgressbar(ProgressBar progressBar)
+	{
+		yield return null;
+		progressBar.style.display = DisplayStyle.Flex;
+	}
 
     // Call this method to update all progress bars
     public void UpdateProgressBars()
