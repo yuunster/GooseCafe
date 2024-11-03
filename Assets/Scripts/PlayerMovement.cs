@@ -259,6 +259,15 @@ public class PlayerMovement : MonoBehaviour
         heldItem.GetComponent<Collider>().enabled = true;
         heldItem.GetComponent<Rigidbody>().isKinematic = false;
         heldItem.transform.localScale = Vector3.one;    // Prevent player animations from permanently "stretching" a held item
+
+        // If releasing an item would release it inside of an object, release it on top instead.
+        int numHits = Physics.OverlapBoxNonAlloc(collCenter + new Vector3(0, 0.5f, 0) + transform.forward * maxInteractRange, new Vector3(0.5f, 2f, 0.7f), hits, Quaternion.LookRotation(transform.forward), LayerMask.GetMask("Default"));
+        if (numHits > 0)
+        {
+            Collider closestHit = hits.Take(numHits).OrderBy(hit => Vector3.Distance(transform.position + transform.forward * maxInteractRange, hit.transform.position)).ToArray()[0];
+            heldItem.transform.position += transform.up * (closestHit.bounds.size.y - closestHit.ClosestPoint(collCenter).y + heldItem.GetComponent<BoxCollider>().size.y / 2);
+        }
+
         heldItem = null;
     }
 
