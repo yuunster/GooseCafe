@@ -181,6 +181,8 @@ public class PlayerMovement : MonoBehaviour
                     }
                     else
                     {
+                        if (GameAssets.i.IsFinishedItem(heldItem)) return;  // Prevent finishedItems from being put into a pot
+
                         stoveScript.heldItem.GetComponent<Pot>().Input(heldItem);
                         stoveScript.StopCooking();
                         stoveScript.StartCooking();
@@ -220,6 +222,8 @@ public class PlayerMovement : MonoBehaviour
             }
             else if (heldItem != null) // If holding something, put it in the pot
             {
+                if (GameAssets.i.IsFinishedItem(heldItem)) return;  // Prevent finishedItems from being put into a pot
+
                 potScript.Input(heldItem);
                 heldItem.transform.position = closestGO.transform.position + new Vector3(0, closestGO.GetComponent<BoxCollider>().size.y / 2, 0);
                 heldItem.transform.SetParent(closestGO.transform);

@@ -60,3 +60,6 @@ MonoBehaviour:
   - {fileID: 2073282240714078878, guid: ec8132adc2545df4d9f128d495866611, type: 3}
   - {fileID: 2073282240714078878, guid: d3d621f6d7560f747aa8af612a7192c4, type: 3}
   - {fileID: 2073282240714078878, guid: 3bf3b60bc09325b4cad25cadb1c79539, type: 3}
+  finishedItems:
+  - {fileID: 8059885257644543679, guid: 41999861ff6df8b4784755ad4bc463eb, type: 3}
+  - {fileID: 8059885257644543679, guid: 657e3c95d7bccd84e8dd47d16abb2b31, type: 3}

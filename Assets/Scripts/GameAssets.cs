@@ -17,6 +17,7 @@ public class GameAssets : MonoBehaviour
     public string[] ingredientTags;
     public GameObject pot;
     public GameObject[] customerPrefabs;
+    public GameObject[] finishedItems;
 
     private void Start()
     {
@@ -25,5 +26,18 @@ public class GameAssets : MonoBehaviour
         {
             ingredientTags[i] = ingredientPrefabs[i].tag;
         }
+    }
+
+    public bool IsFinishedItem(GameObject item)
+    {
+        foreach (var finishedItem in finishedItems)
+        {
+            if (finishedItem.CompareTag(item.tag))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
