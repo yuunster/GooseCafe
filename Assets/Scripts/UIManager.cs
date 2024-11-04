@@ -8,19 +8,25 @@ class PotProgressPair
 	public GameObject pot;
 	public ProgressBar progressBar;
 }
-class CustomerOrderImagePair
+class CustomerImagePair
 {
     public GameObject customer;
-    public Image orderImage;
+    public Image image;
+}
+class CustomerLabelPair
+{
+    public GameObject customer;
+    public Label label;
 }
 
 public class UIManager : MonoBehaviour
 {
 	private VisualElement root;    // Root of the UI Document
 	private List<PotProgressPair> potProgressPairs = new List<PotProgressPair>();
-	private List<CustomerOrderImagePair> customerOrderImagePairs = new List<CustomerOrderImagePair>();
+	private List<CustomerImagePair> customerImagePairs = new List<CustomerImagePair>();
+    private List<CustomerLabelPair> customerLabelPairs = new List<CustomerLabelPair>();
 
-	[SerializeField] float potYOffset = 1.5f;
+    [SerializeField] float potYOffset = 1.5f;
     [SerializeField] float customerYOffset = 1.5f;
 
     void Start()
@@ -32,6 +38,7 @@ public class UIManager : MonoBehaviour
 	{
         UpdateProgressBars();
 		UpdateCustomerOrderImages();
+        UpdateCustomerLabels();
 	}
 
 	public ProgressBar AddPotProgressBar(GameObject pot)
@@ -59,15 +66,36 @@ public class UIManager : MonoBehaviour
 	{
         // Add to UI
         root.Add(image);
-        CustomerOrderImagePair pair = new CustomerOrderImagePair() { customer = customer, orderImage = image };
-        customerOrderImagePairs.Add(pair);
+        CustomerImagePair pair = new CustomerImagePair() { customer = customer, image = image };
+        customerImagePairs.Add(pair);
 
         // Position the Image based on the customer's screen position
         PositionCustomerImage(image, customer.transform.position);
         StartCoroutine(DelayDisplaying(image));
     }
 
-	public void RemoveProgressBar(ProgressBar progressBar)
+    public Label AddCustomerLabel(GameObject customer, string text)
+    {
+        Label label = new Label() { text = text };
+        label.style.fontSize = 50;
+        label.style.unityFontStyleAndWeight = FontStyle.Bold;
+        label.style.color = Color.white;
+        label.style.unityTextOutlineColor = Color.red;
+        label.style.unityTextOutlineWidth = 10;
+        label.style.position = Position.Absolute;
+        label.style.display = DisplayStyle.None;
+
+        CustomerLabelPair pair = new CustomerLabelPair() { customer = customer, label = label };
+        customerLabelPairs.Add(pair);
+
+        root.Add(label);
+        PositionCustomerLabel(label, customer.transform.position);
+        StartCoroutine(DelayDisplaying(label));
+
+        return label;
+    }
+
+    public void RemoveProgressBar(ProgressBar progressBar)
 	{
 		foreach (PotProgressPair pair in potProgressPairs)
 		{
@@ -81,13 +109,25 @@ public class UIManager : MonoBehaviour
 	}
     public void RemoveCustomerImage(Image image)
     {
-        foreach (CustomerOrderImagePair pair in customerOrderImagePairs)
+        foreach (CustomerImagePair pair in customerImagePairs)
         {
-            if (pair.orderImage == image)
+            if (pair.image == image)
             {
-                customerOrderImagePairs.Remove(pair);
+                customerImagePairs.Remove(pair);
             }
             root.Remove(image);
+            return;
+        }
+    }
+    public void RemoveCustomerLabel(Label label)
+    {
+        foreach (CustomerLabelPair pair in customerLabelPairs)
+        {
+            if (pair.label == label)
+            {
+                customerLabelPairs.Remove(pair);
+            }
+            root.Remove(label);
             return;
         }
     }
@@ -105,7 +145,14 @@ public class UIManager : MonoBehaviour
         image.style.top = Screen.height - screen.y - customerYOffset;
     }
 
-    public void UpdateProgressBars()
+    private void PositionCustomerLabel(Label label, Vector3 customerPosition)
+    {
+        Vector3 screen = Camera.main.WorldToScreenPoint(customerPosition + new Vector3(0, 1.4f, 0));    // Displace by height of Customer
+        label.style.left = screen.x - (label.contentRect.width / 2);
+        label.style.top = Screen.height - screen.y - customerYOffset;
+    }
+
+    private void UpdateProgressBars()
 	{
 		foreach (var pair in potProgressPairs)
 		{
@@ -113,13 +160,22 @@ public class UIManager : MonoBehaviour
 		}
 	}
 
-	public void UpdateCustomerOrderImages()
+	private void UpdateCustomerOrderImages()
 	{
-		foreach (var pair in customerOrderImagePairs)
+		foreach (var pair in customerImagePairs)
 		{
-			PositionCustomerImage(pair.orderImage, pair.customer.transform.position);
+			PositionCustomerImage(pair.image, pair.customer.transform.position);
 		}
 	}
+
+    private void UpdateCustomerLabels()
+    {
+        foreach (var pair in customerLabelPairs)
+        {
+            if (pair.label == null) break;
+            PositionCustomerLabel(pair.label, pair.customer.transform.position);
+        }
+    }
 
     private IEnumerator DelayDisplaying(VisualElement element)
     {

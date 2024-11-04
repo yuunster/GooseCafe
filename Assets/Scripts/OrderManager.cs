@@ -21,6 +21,7 @@ public class OrderManager : MonoBehaviour
     [SerializeField] private int generateCustomerSpeed = 5;
     [SerializeField] private int orderDuration = 30;
     [SerializeField] private int maxCustomers = 20;
+    [SerializeField] private int patienceDuration = 10;
     private List<Order> currentOrders;
     private List<GameObject> waitingCustomers;
     private VisualElement root;
@@ -122,7 +123,10 @@ public class OrderManager : MonoBehaviour
 
         customerScript.navAgent.SetDestination(customerSpawner.transform.position);
         customerScript.leaving = true;
+
         yield return new WaitForSeconds(5);
+
+        if (customerScript.label != null) uiManager.RemoveCustomerLabel(customerScript.label);
         Destroy(customer);
     }
 
@@ -168,13 +172,14 @@ public class OrderManager : MonoBehaviour
         image.style.position = Position.Absolute;
         image.style.display = DisplayStyle.None;    // Hide image until correctly positioned by UIManager
 
-        customerScript.orderImage = image;
+        customerScript.image = image;
         uiManager.AddCustomerOrderImage(customer, image);
 
 
         if (waitingCustomers.Count == 0)    // If first customer, navigate to orderCounter. Else, navigate to the last person in line.
         {
             customer.GetComponent<Customer>().navAgent.SetDestination(orderCounter.transform.position);
+            customerScript.patienceTimer = StartCoroutine(StartPatienceTimer(customerScript));
         }
         else
         {
@@ -203,12 +208,37 @@ public class OrderManager : MonoBehaviour
             secondCustomerScript.leader = null;
         }
 
-        uiManager.RemoveCustomerImage(firstCustomerScript.orderImage);
+        uiManager.RemoveCustomerImage(firstCustomerScript.image);
         AddOrder(firstCustomerScript.orderIndex, firstCustomerScript.gameObject);
         firstCustomerScript.navAgent.SetDestination(customerWaitingArea.transform.position);
 
         waitingCustomers.Remove(firstCustomerScript.gameObject);
 
         firstCustomerScript.waiting = true;
+        StopCoroutine(firstCustomerScript.patienceTimer);
+    }
+
+    private IEnumerator StartPatienceTimer(Customer customer)
+    {
+        yield return new WaitForSeconds(patienceDuration);
+        CustomerPatienceTimeOut(customer);
+    }
+
+    private void CustomerPatienceTimeOut(Customer customer)
+    {
+        UpdateScore(-100);
+        uiManager.RemoveCustomerImage(customer.image);
+        customer.label = uiManager.AddCustomerLabel(customer.gameObject, ">:(");
+
+        if (waitingCustomers.Count > 1)
+        {
+            Customer secondCustomerScript = waitingCustomers[1].GetComponent<Customer>();
+            secondCustomerScript.navAgent.SetDestination(orderCounter.transform.position);
+            secondCustomerScript.leader = null;
+            secondCustomerScript.patienceTimer = StartCoroutine(StartPatienceTimer(secondCustomerScript));
+        }
+
+        waitingCustomers.Remove(customer.gameObject);
+        StartCoroutine(RemoveCustomer(customer.gameObject));
     }
 }

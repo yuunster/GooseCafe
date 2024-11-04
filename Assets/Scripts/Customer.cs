@@ -7,7 +7,9 @@ using UnityEngine.UIElements;
 public class Customer : MonoBehaviour
 {
     public NavMeshAgent navAgent;
-    public Image orderImage;
+    public Image image;
+    public Label label;
+    public Coroutine patienceTimer;
     public int orderIndex;
     public bool waiting = false;
     public bool leaving = false;
