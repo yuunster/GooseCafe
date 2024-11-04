@@ -2,22 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static UnityEngine.Rendering.DebugUI.MessageBox;
 
 struct Order
 {
     public GameObject GameObject;
     public VisualElement VisualElement;
+    public GameObject Customer;
 }
 
 public class OrderManager : MonoBehaviour
 {
     [SerializeField] private UIDocument uiDocument;
+    [SerializeField] private GameObject customerSpawner;
+    [SerializeField] private GameObject customerWaitingArea;
+    [SerializeField] private GameObject orderCounter;
     [SerializeField] private GameObject[] possibleOrders;
     [SerializeField] private Texture2D[] possibleImages;
-    [SerializeField] private int generateOrderSpeed = 5;
+    [SerializeField] private int generateCustomerSpeed = 5;
     [SerializeField] private int orderDuration = 30;
     private List<Order> currentOrders;
+    private List<GameObject> waitingCustomers;
     private VisualElement root;
     private GroupBox groupBox;
     private int score = 0;
@@ -26,21 +30,29 @@ public class OrderManager : MonoBehaviour
         { "MilkTea", 100 },
         { "MilkTeaBoba", 300 }
     };
+    private UIManager uiManager;
+
+    private void Awake()
+    {
+        uiManager = FindObjectOfType<UIManager>();
+    }
 
     private void Start()
     {
         root = uiDocument.rootVisualElement;
         groupBox = root.Q<GroupBox>("Orders");
         currentOrders = new List<Order>();
-        GenerateOrder();
-        StartCoroutine(WaitToGenerateOrder());
+        waitingCustomers = new List<GameObject>();
+
+        GenerateCustomer();
+        StartCoroutine(WaitToGenerateCustomer());
     }
 
-    private void GenerateOrder()
+    private void AddOrder(int orderIndex, GameObject customer)
     {
         Order newOrder = new Order();
-        int randomIndex = Random.Range(0, possibleOrders.Length);
-        newOrder.GameObject = possibleOrders[randomIndex];
+        newOrder.GameObject = possibleOrders[orderIndex];
+        newOrder.Customer = customer;
 
         // Container
         VisualElement newOrderContainer = new VisualElement();
@@ -49,7 +61,7 @@ public class OrderManager : MonoBehaviour
         // Image
         Image imageElement = new Image
         {
-            image = possibleImages[randomIndex],
+            image = possibleImages[orderIndex],
             scaleMode = ScaleMode.ScaleToFit
         };
         imageElement.style.width = 100;
@@ -73,12 +85,11 @@ public class OrderManager : MonoBehaviour
         StartCoroutine(WaitToIncompleteOrder(newOrder, progressBar));
     }
 
-    private IEnumerator WaitToGenerateOrder()
+    private int GenerateOrder()
     {
-        yield return new WaitForSeconds(generateOrderSpeed);
-        GenerateOrder();
-        StartCoroutine(WaitToGenerateOrder());
+        return Random.Range(0, possibleOrders.Length);
     }
+
     private IEnumerator WaitToIncompleteOrder(Order order, ProgressBar progressBar)
     {
         float elapsedTime = 0f;
@@ -96,12 +107,23 @@ public class OrderManager : MonoBehaviour
         progressBar.value = 0;
         int index = currentOrders.IndexOf(order);
         RemoveOrder(index);
+        StartCoroutine(RemoveCustomer(order.Customer));
     }
 
     private void RemoveOrder(int index)
     {
         currentOrders.RemoveAt(index);
         groupBox.RemoveAt(index);
+    }
+
+    private IEnumerator RemoveCustomer(GameObject customer)
+    {
+        Customer customerScript = customer.GetComponent<Customer>();
+
+        customerScript.navAgent.SetDestination(customerSpawner.transform.position);
+        customerScript.leaving = true;
+        yield return new WaitForSeconds(5);
+        Destroy(customer);
     }
 
     private void UpdateScore(int scoreAdjustment)
@@ -119,10 +141,72 @@ public class OrderManager : MonoBehaviour
             {
                 int index = currentOrders.FindIndex(x => x.GameObject.CompareTag(input.tag));  // Find index of the matched order
                 RemoveOrder(index);
+                StartCoroutine(RemoveCustomer(order.Customer));
                 UpdateScore(scoreMap[input.tag]);   // Update score based on the items score value defined at the beginning of this class
 
                 return;
             }
         }
+    }
+
+    private void GenerateCustomer()
+    {
+        int randomIndex = Random.Range(0, GameAssets.i.customerPrefabs.Length);
+        GameObject customer = Instantiate(GameAssets.i.customerPrefabs[randomIndex], customerSpawner.transform.position, Quaternion.identity);
+        Customer customerScript = customer.GetComponent<Customer>();
+
+        int orderIndex = GenerateOrder();
+        customerScript.orderIndex = orderIndex;
+
+        // Image
+        Image image = new Image { image = possibleImages[orderIndex] };
+        image.style.width = 100;
+        image.style.height = 100;
+        image.style.flexGrow = 0;
+        image.style.position = Position.Absolute;
+        image.style.display = DisplayStyle.None;    // Hide image until correctly positioned by UIManager
+
+        customerScript.orderImage = image;
+        uiManager.AddCustomerOrderImage(customer, image);
+
+
+        if (waitingCustomers.Count == 0)    // If first customer, navigate to orderCounter. Else, navigate to the last person in line.
+        {
+            customer.GetComponent<Customer>().navAgent.SetDestination(orderCounter.transform.position);
+        }
+        else
+        {
+            customer.GetComponent<Customer>().leader = waitingCustomers[waitingCustomers.Count - 1].transform;   // Make the new customer follow the last customer in line
+        }
+
+        waitingCustomers.Add(customer);
+    }
+
+    private IEnumerator WaitToGenerateCustomer()
+    {
+        yield return new WaitForSeconds(generateCustomerSpeed);
+        GenerateCustomer();
+        StartCoroutine(WaitToGenerateCustomer());
+    }
+
+    public void TakeOrder()
+    {
+        if (waitingCustomers.Count == 0) return;
+
+        Customer firstCustomerScript = waitingCustomers[0].GetComponent<Customer>();
+        if (waitingCustomers.Count > 1)
+        {
+            Customer secondCustomerScript = waitingCustomers[1].GetComponent<Customer>();
+            secondCustomerScript.navAgent.SetDestination(orderCounter.transform.position);
+            secondCustomerScript.leader = null;
+        }
+
+        uiManager.RemoveCustomerImage(firstCustomerScript.orderImage);
+        AddOrder(firstCustomerScript.orderIndex, firstCustomerScript.gameObject);
+        firstCustomerScript.navAgent.SetDestination(customerWaitingArea.transform.position);
+
+        waitingCustomers.Remove(firstCustomerScript.gameObject);
+
+        firstCustomerScript.waiting = true;
     }
 }

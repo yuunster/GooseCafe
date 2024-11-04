@@ -13,16 +13,17 @@ public class GameAssets : MonoBehaviour
         }
     }
 
-    public GameObject[] ingredients;
+    public GameObject[] ingredientPrefabs;
     public string[] ingredientTags;
     public GameObject pot;
+    public GameObject[] customerPrefabs;
 
     private void Start()
     {
-        ingredientTags = new string[ingredients.Length];
-        for (int i = 0; i < ingredients.Length; i++)
+        ingredientTags = new string[ingredientPrefabs.Length];
+        for (int i = 0; i < ingredientPrefabs.Length; i++)
         {
-            ingredientTags[i] = ingredients[i].tag;
+            ingredientTags[i] = ingredientPrefabs[i].tag;
         }
     }
 }

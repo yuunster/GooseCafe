@@ -39,7 +39,7 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         coll = GetComponent<CapsuleCollider>();
         hits = new Collider[10];
-        interactablesLayer = LayerMask.GetMask("Item", "Combiner", "ItemSpawner", "Stove", "Pot", "TrashCan", "SubmitOrder");
+        interactablesLayer = LayerMask.GetMask("Item", "Combiner", "ItemSpawner", "Stove", "Pot", "TrashCan", "SubmitOrder", "OrderCounter");
         orderManager = FindObjectOfType<OrderManager>();
     }
 
@@ -246,6 +246,10 @@ public class PlayerMovement : MonoBehaviour
         {
             orderManager.CheckAndFinishOrder(heldItem);
             DestroyHeldItem();
+        }
+        else if (closestGO.layer == LayerMask.NameToLayer("OrderCounter"))
+        {
+            orderManager.TakeOrder();
         }
     }
 
