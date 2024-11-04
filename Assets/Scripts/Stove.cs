@@ -24,7 +24,7 @@ public class Stove : MonoBehaviour
         heldItem.GetComponent<Collider>().enabled = false;
         heldItem.GetComponent<Rigidbody>().isKinematic = true;
         if (heldItem.CompareTag("TrashPot")) return true;   // If trash pot, stop here
-        if (!heldItem.GetComponent<Pot>().isEmpty) StartCooking();  // If pot is not empty, start cooking
+        if (heldItem.CompareTag("CookedBobaPot") || !heldItem.GetComponent<Pot>().isEmpty) StartCooking();  // If CookedBobaPot or pot is not empty, start cooking
 
         return true;
     }
