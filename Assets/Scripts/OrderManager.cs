@@ -20,6 +20,7 @@ public class OrderManager : MonoBehaviour
     [SerializeField] private Texture2D[] possibleImages;
     [SerializeField] private int generateCustomerSpeed = 5;
     [SerializeField] private int orderDuration = 30;
+    [SerializeField] private int maxCustomers = 20;
     private List<Order> currentOrders;
     private List<GameObject> waitingCustomers;
     private VisualElement root;
@@ -151,6 +152,8 @@ public class OrderManager : MonoBehaviour
 
     private void GenerateCustomer()
     {
+        if (waitingCustomers.Count >= maxCustomers) return;
+
         int randomIndex = Random.Range(0, GameAssets.i.customerPrefabs.Length);
         GameObject customer = Instantiate(GameAssets.i.customerPrefabs[randomIndex], customerSpawner.transform.position, Quaternion.identity);
         Customer customerScript = customer.GetComponent<Customer>();
