@@ -206,6 +206,7 @@ public class OrderManager : MonoBehaviour
             Customer secondCustomerScript = waitingCustomers[1].GetComponent<Customer>();
             secondCustomerScript.navAgent.SetDestination(orderCounter.transform.position);
             secondCustomerScript.leader = null;
+            secondCustomerScript.patienceTimer = StartCoroutine(StartPatienceTimer(secondCustomerScript));
         }
 
         uiManager.RemoveCustomerImage(firstCustomerScript.image);
