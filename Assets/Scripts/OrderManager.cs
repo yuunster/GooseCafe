@@ -205,6 +205,7 @@ public class OrderManager : MonoBehaviour
         }
 
         uiManager.RemoveCustomerImage(firstCustomerScript.image);
+        uiManager.RemoveCustomerProgressBar(firstCustomerScript.progressBar);
         AddOrder(firstCustomerScript.orderIndex, firstCustomerScript.gameObject);
         firstCustomerScript.navAgent.SetDestination(customerWaitingArea.transform.position);
 
