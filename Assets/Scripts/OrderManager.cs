@@ -74,8 +74,7 @@ public class OrderManager : MonoBehaviour
         progressBar.style.height = 50;
         progressBar.value = 100;    // Start the progress bar at full
         progressBar.title = "";
-        progressBar.AddToClassList("progress-fill-red");    // Make progress bar red based on USS.uss style sheet
-
+        progressBar.Q("", "unity-progress-bar__progress").style.backgroundColor = Color.red;
         newOrderContainer.Add(imageElement);
         newOrderContainer.Add(progressBar);
         newOrder.VisualElement = newOrderContainer;

@@ -40,8 +40,8 @@ public class UIManager : MonoBehaviour
 		progressBar.style.height = 50;
 		progressBar.style.width = 100;
         progressBar.style.position = Position.Absolute;
-        progressBar.AddToClassList("progress-fill-red");    // Make progress bar red based on USS.uss style sheet
 		progressBar.style.display = DisplayStyle.None;	// Hide ProgressBar until properly positioned
+        progressBar.Q("", "unity-progress-bar__progress").style.backgroundColor = Color.red;
 
         // Add to UI
         root.Add(progressBar);
