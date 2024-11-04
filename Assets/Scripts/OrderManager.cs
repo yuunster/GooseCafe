@@ -34,17 +34,13 @@ public class OrderManager : MonoBehaviour
     };
     private UIManager uiManager;
 
-    private void Awake()
-    {
-        uiManager = FindObjectOfType<UIManager>();
-    }
-
     private void Start()
     {
         root = uiDocument.rootVisualElement;
         groupBox = root.Q<GroupBox>("Orders");
         currentOrders = new List<Order>();
         waitingCustomers = new List<GameObject>();
+        uiManager = FindObjectOfType<UIManager>();
 
         GenerateCustomer();
         StartCoroutine(WaitToGenerateCustomer());
@@ -175,7 +171,6 @@ public class OrderManager : MonoBehaviour
         customerScript.image = image;
         uiManager.AddCustomerOrderImage(customer, image);
 
-
         if (waitingCustomers.Count == 0)    // If first customer, navigate to orderCounter. Else, navigate to the last person in line.
         {
             customer.GetComponent<Customer>().navAgent.SetDestination(orderCounter.transform.position);
@@ -221,7 +216,21 @@ public class OrderManager : MonoBehaviour
 
     private IEnumerator StartPatienceTimer(Customer customer)
     {
-        yield return new WaitForSeconds(patienceDuration);
+        customer.progressBar = uiManager.AddCustomerProgressBar(customer.gameObject);
+        float elapsedTime = 0f;
+
+        while (elapsedTime < patienceDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float progress = Mathf.Clamp01(1 - (elapsedTime / patienceDuration)) * 100; // Calculate progress percentage
+            customer.progressBar.value = progress;
+
+            yield return null; // Wait for the next frame
+        }
+
+        // Ensure progress bar is empty at the end
+        customer.progressBar.value = 0;
+        uiManager.RemoveCustomerProgressBar(customer.progressBar);
         CustomerPatienceTimeOut(customer);
     }
 

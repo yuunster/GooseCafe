@@ -9,6 +9,7 @@ public class Customer : MonoBehaviour
     public NavMeshAgent navAgent;
     public Image image;
     public Label label;
+    public ProgressBar progressBar;
     public Coroutine patienceTimer;
     public int orderIndex;
     public bool waiting = false;

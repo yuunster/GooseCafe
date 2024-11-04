@@ -58,7 +58,7 @@ MonoBehaviour:
   generateCustomerSpeed: 5
   orderDuration: 30
   maxCustomers: 20
-  patienceDuration: 10
+  patienceDuration: 15
 --- !u!114 &7883725102800556402
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -41,7 +41,7 @@ public class Stove : MonoBehaviour
         if (cookCoroutine != null)
         {
             StopCoroutine(cookCoroutine);
-            uiManager.RemoveProgressBar(progressBar);
+            uiManager.RemovePotProgressBar(progressBar);
             cookCoroutine = null;
         }
     }
@@ -76,7 +76,7 @@ public class Stove : MonoBehaviour
         // Ensure progress bar is empty at the end
         progressBar.value = 0;
 
-        uiManager.RemoveProgressBar(progressBar);
+        uiManager.RemovePotProgressBar(progressBar);
 
         GameObject cookedPot = potScript.Cook();
         ReplacePot(cookedPot);
