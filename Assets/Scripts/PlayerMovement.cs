@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -20,6 +21,11 @@ public class PlayerMovement : MonoBehaviour
     private bool isDashOnCooldown = false;
 
     [SerializeField] private GameObject neck;
+    [SerializeField] private GameObject itemPopup; // General item popup
+    [SerializeField] private Image itemImage; // Image to display in item popup
+    [SerializeField] private GameObject recipePopup; // Popup specifically for recipe display (milkTeaCombiner)
+    [SerializeField] private Image recipeImage; // Image to display in recipe popup
+    [SerializeField] private GameObject milkTeaCombiner; // Reference to MilkTeaCombiner object
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float maxSlopeAngle = 30f;
@@ -29,6 +35,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float dashSpeed = 2f;
     [SerializeField] private float dashDuration = 0.5f;
     [SerializeField] private float dashCooldown = 1f;
+    [SerializeField] private Dictionary<string, Sprite> itemSprites;
+    [SerializeField] private float recipeDisplayDistance = 0.5f; // Distance to display the recipePopup
 
     public bool grounded { get; private set; }
     public RaycastHit groundedHit;
@@ -41,11 +49,27 @@ public class PlayerMovement : MonoBehaviour
         hits = new Collider[10];
         interactablesLayer = LayerMask.GetMask("Item", "Combiner", "ItemSpawner", "Stove", "Pot", "TrashCan", "SubmitOrder", "OrderCounter");
         orderManager = FindObjectOfType<OrderManager>();
+
+        if (itemPopup != null) itemPopup.SetActive(false);
+        if (recipePopup != null) recipePopup.SetActive(false);
+
+        // Load item images into dictionary
+        itemSprites = new Dictionary<string, Sprite>
+        {
+            { "boba", Resources.Load<Sprite>("Items/boba") },
+            { "cup", Resources.Load<Sprite>("Items/cup") },
+            { "milk", Resources.Load<Sprite>("Items/milk") },
+            { "sugar", Resources.Load<Sprite>("Items/sugar") },
+            { "milkteacombiner", Resources.Load<Sprite>("Items/Rimage") }, // Image for milk tea combiner
+            { "tea", Resources.Load<Sprite>("Items/tea") }
+        };
     }
 
     private void Update()
     {
         Movement();
+        ShowItemPopup();
+        ShowRecipePopup();
         Interaction();
         Throw();
         Dash();
@@ -92,6 +116,89 @@ public class PlayerMovement : MonoBehaviour
         Gizmos.DrawWireCube(collCenter + new Vector3(0, 0.5f, 0) + transform.forward * maxInteractRange, new Vector3(0.5f, 2f, 0.5f));
     }
 
+    private void ShowItemPopup()
+    {
+        int numHits = Physics.OverlapBoxNonAlloc(
+            collCenter + new Vector3(0, 0.5f, 0) + transform.forward * maxInteractRange,
+            new Vector3(0.5f, 2f, 0.7f),
+            hits,
+            Quaternion.LookRotation(transform.forward),
+            interactablesLayer
+        );
+
+        if (numHits == 0)
+        {
+            if (itemPopup != null) itemPopup.SetActive(false);
+            return;
+        }
+
+        // Filter out null hits and choose the closest non-null collider
+        Collider closestHit = hits
+            .Where(hit => hit != null)
+            .OrderBy(hit => Vector3.Distance(transform.position + transform.forward * maxInteractRange, hit.transform.position))
+            .FirstOrDefault();
+
+        if (closestHit == null)
+        {
+            if (itemPopup != null) itemPopup.SetActive(false);
+            return;
+        }
+
+        GameObject closestGO = closestHit.transform.gameObject;
+
+        if (closestGO != null && closestGO.TryGetComponent<ItemSpawner>(out ItemSpawner spawnerScript))
+        {
+            string itemName = spawnerScript.item.name.ToLower();
+
+            // Exclude "milkteacombiner" from displaying in the item popup
+            if (itemName == "milkteacombiner")
+            {
+                if (itemPopup != null) itemPopup.SetActive(false);
+                return;
+            }
+
+            if (itemSprites.ContainsKey(itemName))
+            {
+                itemPopup.SetActive(true);
+                itemImage.sprite = itemSprites[itemName];
+
+                Vector3 itemScreenPosition = Camera.main.WorldToScreenPoint(closestGO.transform.position + Vector3.up * 2.5f);
+                itemPopup.transform.position = itemScreenPosition;
+            }
+            else
+            {
+                itemPopup.SetActive(false);
+                Debug.LogWarning("Item not found in itemSprites dictionary: " + itemName);
+            }
+        }
+        else
+        {
+            itemPopup.SetActive(false);
+        }
+    }
+
+
+    private void ShowRecipePopup()
+    {
+        if (milkTeaCombiner != null && recipePopup != null)
+        {
+            float distanceToMilkTeaCombiner = Vector3.Distance(transform.position, milkTeaCombiner.transform.position);
+
+            if (distanceToMilkTeaCombiner <= recipeDisplayDistance)
+            {
+                recipePopup.SetActive(true);
+                recipeImage.sprite = itemSprites["milkteacombiner"];
+
+                Vector3 recipeScreenPosition = Camera.main.WorldToScreenPoint(milkTeaCombiner.transform.position + Vector3.up * 2.5f);
+                recipePopup.transform.position = recipeScreenPosition;
+            }
+            else
+            {
+                recipePopup.SetActive(false);
+            }
+        }
+    }
+
     private void Interaction()
     {
         bool isInteracting = Input.GetKeyDown(KeyCode.E);
@@ -99,7 +206,14 @@ public class PlayerMovement : MonoBehaviour
 
         animator.SetTrigger("Interact");
 
-        int numHits = Physics.OverlapBoxNonAlloc(collCenter + new Vector3(0, 0.5f, 0) + transform.forward * maxInteractRange, new Vector3(0.5f, 2f, 0.7f), hits, Quaternion.LookRotation(transform.forward), interactablesLayer);
+        int numHits = Physics.OverlapBoxNonAlloc(
+            collCenter + new Vector3(0, 0.5f, 0) + transform.forward * maxInteractRange,
+            new Vector3(0.5f, 2f, 0.7f),
+            hits,
+            Quaternion.LookRotation(transform.forward),
+            interactablesLayer
+        );
+
         if (numHits == 0)
         {
             if (heldItem != null) ReleaseItem(heldItem);
@@ -107,7 +221,11 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Make a copy of hits array with only numHits as the length. Sort this array by closest -> farthest distance. Return the closest hit.
-        Collider closestHit = hits.Take(numHits).OrderBy(hit => Vector3.Distance(transform.position + transform.forward * maxInteractRange, hit.transform.position)).ToArray()[0];
+        Collider closestHit = hits
+            .Take(numHits)
+            .OrderBy(hit => Vector3.Distance(transform.position + transform.forward * maxInteractRange, hit.transform.position))
+            .ToArray()[0];
+
         GameObject closestGO = closestHit.transform.gameObject;
 
         if (closestGO.layer == LayerMask.NameToLayer("Item"))
