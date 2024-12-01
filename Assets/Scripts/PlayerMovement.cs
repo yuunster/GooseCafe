@@ -79,8 +79,8 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isDashing) return;
 
-        horizontalInput = Input.GetAxisRaw("Horizontal");
-        verticalInput = Input.GetAxisRaw("Vertical");
+        horizontalInput = UserInput.instance.MoveInput.x;
+        verticalInput = UserInput.instance.MoveInput.y;
 
         moveDirection = new Vector3(horizontalInput, 0, verticalInput).normalized;
         float velocityY = rb.velocity.y > 0 ? 0 : rb.velocity.y;
@@ -201,7 +201,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Interaction()
     {
-        bool isInteracting = Input.GetKeyDown(KeyCode.E);
+        bool isInteracting = UserInput.instance.InteractInput;
         if (!isInteracting) return;
 
         animator.SetTrigger("Interact");
@@ -411,7 +411,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Throw()
     {
-        bool isThrowing = Input.GetButtonDown("Fire1");
+        bool isThrowing = UserInput.instance.ThrowInput;
         if (!isThrowing) return;
 
         animator.SetTrigger("Throw");
@@ -430,7 +430,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Dash()
     {
-        bool tryingToDash = Input.GetButtonDown("Fire3");
+        bool tryingToDash = UserInput.instance.DashInput;
         if (!tryingToDash || isDashing || isDashOnCooldown) return;
 
         rb.velocity = transform.forward * moveSpeed + transform.forward * dashSpeed;
