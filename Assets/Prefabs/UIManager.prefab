@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45a7e1ef49474184d9bba6b82b30f2a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiDocument: {fileID: 0}
   potYOffset: 100
   customerYOffset: 150
 --- !u!114 &871856118582420442
