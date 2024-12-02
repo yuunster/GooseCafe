@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuManager : MonoBehaviour
 {
+    public GameObject rulesPanel;
     public void PlayGame()
     {
         SceneManager.LoadScene("KitchenTestScene");
@@ -10,7 +11,12 @@ public class MainMenuManager : MonoBehaviour
 
     public void ShowRules()
     {
-        // need to implement new UI panel for rules here
+        rulesPanel.SetActive(true);
+    }
+
+    public void HideRules()
+    {
+        rulesPanel.SetActive(false);
     }
 
     public void QuitGame()
