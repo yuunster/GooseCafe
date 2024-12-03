@@ -79,39 +79,37 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isDashing) return;
 
-        horizontalInput = UserInput.instance.MoveInput.x;
-        verticalInput = UserInput.instance.MoveInput.y;
+        horizontalInput = UserInput.Instance.GetMoveInput().x;  // Access the movement input
+        verticalInput = UserInput.Instance.GetMoveInput().y;
 
         moveDirection = new Vector3(horizontalInput, 0, verticalInput).normalized;
         float velocityY = rb.velocity.y > 0 ? 0 : rb.velocity.y;
 
-        grounded = Physics.Raycast(collCenter, Vector3.down, out groundedHit, coll.height + 0.1f); // Check if grounded
+        grounded = Physics.Raycast(collCenter, Vector3.down, out groundedHit, coll.height + 0.1f);
 
         if (grounded)
         {
-            float angle = Vector3.Angle(groundedHit.normal, Vector3.up);    // Calculate angle of the floor
-            if (angle >= maxSlopeAngle) return;     // Check if angle of ground is too steep to walk
+            float angle = Vector3.Angle(groundedHit.normal, Vector3.up);
+            if (angle >= maxSlopeAngle) return;
         }
 
         if (moveDirection.magnitude > 0)
         {
             animator.SetBool("IsMoving", true);
-
             rb.velocity = moveDirection * moveSpeed + new Vector3(0, velocityY, 0);
-
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
         }
         else
         {
             animator.SetBool("IsMoving", false);
-
             rb.velocity = new Vector3(0, velocityY, 0);
         }
     }
 
     // Visualize BoxCast that handles interaction
-    void OnDrawGizmos() {
+    void OnDrawGizmos() 
+    {
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(collCenter + new Vector3(0, 0.5f, 0) + transform.forward * maxInteractRange, new Vector3(0.5f, 2f, 0.5f));
     }
@@ -177,7 +175,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-
     private void ShowRecipePopup()
     {
         if (milkTeaCombiner != null && recipePopup != null)
@@ -201,7 +198,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Interaction()
     {
-        bool isInteracting = UserInput.instance.InteractInput;
+        bool isInteracting = UserInput.Instance.GetInteractInput();  // Check for interact input
         if (!isInteracting) return;
 
         animator.SetTrigger("Interact");
@@ -411,42 +408,41 @@ public class PlayerMovement : MonoBehaviour
 
     private void Throw()
     {
-        bool isThrowing = UserInput.instance.ThrowInput;
-        if (!isThrowing) return;
+        if (heldItem != null && UserInput.Instance.GetThrowInput())
+        {
+            Rigidbody itemRb = heldItem.GetComponent<Rigidbody>();
 
-        animator.SetTrigger("Throw");
-
-        if (heldItem == null) return;
-
-        heldItem.transform.SetParent(null);
-        heldItem.GetComponent<Collider>().enabled = true;
-        Rigidbody itemRb = heldItem.GetComponent<Rigidbody>();
-        itemRb.isKinematic = false;
-        itemRb.velocity = transform.forward * throwSpeed    // Horizontal throw speed
-            + transform.up * throwSpeed / 2     // Vertical throw speed 
-            + transform.forward * Vector3.Dot(transform.forward, moveDirection) * throwSpeed;   // Additional throw speed if player is moving
-        heldItem = null;
+            if (itemRb != null)
+            {
+                itemRb.isKinematic = false;
+                itemRb.velocity = transform.forward * throwSpeed;
+                ReleaseItem(heldItem);
+            }
+        }
     }
 
     private void Dash()
     {
-        bool tryingToDash = UserInput.instance.DashInput;
-        if (!tryingToDash || isDashing || isDashOnCooldown) return;
+        if (isDashOnCooldown || isDashing) return;
 
-        rb.velocity = transform.forward * moveSpeed + transform.forward * dashSpeed;
-        StartCoroutine(DashTimer());
-        StartCoroutine(DashCooldown());
+        if (UserInput.Instance.GetDashInput())
+        {
+            StartCoroutine(DashCoroutine());
+        }
     }
 
-    private IEnumerator DashTimer()
+    private IEnumerator DashCoroutine()
     {
         isDashing = true;
-        yield return new WaitForSeconds(dashDuration);
-        isDashing = false;
-    }
+        float startTime = Time.time;
 
-    private IEnumerator DashCooldown()
-    {
+        while (Time.time < startTime + dashDuration)
+        {
+            rb.velocity = transform.forward * dashSpeed;
+            yield return null;
+        }
+
+        isDashing = false;
         isDashOnCooldown = true;
         yield return new WaitForSeconds(dashCooldown);
         isDashOnCooldown = false;
